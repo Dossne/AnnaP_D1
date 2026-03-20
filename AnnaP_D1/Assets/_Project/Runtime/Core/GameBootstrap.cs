@@ -6,7 +6,8 @@ namespace FarmMerger.Core
 {
     public sealed class GameBootstrap : MonoBehaviour
     {
-        private static readonly Color PieceColor = new Color(0.89f, 0.62f, 0.28f, 1f);
+        private static readonly Color PieceColor = new Color(0.98f, 0.91f, 0.63f, 1f);
+        private static readonly Color FrameColor = new Color(0.79f, 0.63f, 0.17f, 1f);
         private const float TargetPortraitAspect = 720f / 1280f;
         private const int VisiblePieceCount = 3;
         private const float PieceRowSpacing = 1.95f;
@@ -295,7 +296,7 @@ namespace FarmMerger.Core
 
             SpriteRenderer renderer = frameObject.AddComponent<SpriteRenderer>();
             renderer.sprite = GetSharedSprite();
-            renderer.color = Color.white;
+            renderer.color = FrameColor;
             renderer.sortingOrder = 0;
         }
 

@@ -6,6 +6,7 @@ namespace FarmMerger.Board
     public sealed class BoardView : MonoBehaviour
     {
         private const float BorderPadding = 0.16f;
+        private static readonly Color BorderColor = new Color(0.79f, 0.63f, 0.17f, 1f);
         private static readonly Color ValidPreviewColor = new Color(0.34f, 0.78f, 0.40f, 0.65f);
         private static readonly Color InvalidPreviewColor = new Color(0.86f, 0.28f, 0.28f, 0.65f);
 
@@ -201,14 +202,14 @@ namespace FarmMerger.Board
                 "Border",
                 config.TotalWidth + (BorderPadding * 2f),
                 config.TotalHeight + (BorderPadding * 2f),
-                Color.white,
+                BorderColor,
                 -2);
 
             CreateLayer(
                 "GridBackground",
                 config.TotalWidth,
                 config.TotalHeight,
-                Color.white,
+                BorderColor,
                 -1);
         }
 
