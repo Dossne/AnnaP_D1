@@ -17,6 +17,8 @@ namespace FarmMerger.Core
         private PieceView[] pieceViews;
         private PieceDefinition[] currentPieces;
         private Camera targetCamera;
+        private int paletteCycleIndex;
+        private int selectedPieceIndex;
 
         private void Awake()
         {
@@ -28,6 +30,7 @@ namespace FarmMerger.Core
             CreatePieceView();
             ConfigureCamera();
             RollNextPiece();
+            SelectPiece(0);
         }
 
         private void Update()
@@ -37,10 +40,36 @@ namespace FarmMerger.Core
 
         private void HandleDebugInput()
         {
+            if (Input.GetMouseButtonDown(0))
+            {
+                HandlePrimaryClick();
+            }
+
             if (Input.GetKeyDown(KeyCode.R))
             {
                 RollNextPiece();
+                SelectPiece(0);
             }
+        }
+
+        private void HandlePrimaryClick()
+        {
+            if (targetCamera == null)
+            {
+                return;
+            }
+
+            Vector3 pointerPosition = Input.mousePosition;
+            pointerPosition.z = Mathf.Abs(targetCamera.transform.position.z);
+
+            Vector3 worldPosition = targetCamera.ScreenToWorldPoint(pointerPosition);
+
+            if (TrySelectPiece(worldPosition))
+            {
+                return;
+            }
+
+            TryPlaceSelectedPiece(worldPosition);
         }
 
         private void CreateBoardView()
@@ -91,12 +120,72 @@ namespace FarmMerger.Core
         {
             for (int index = 0; index < VisiblePieceCount; index++)
             {
-                currentPieces[index] = pieceLibrary.GetRandom();
-                pieceViews[index].ShowPiece(currentPieces[index]);
+                ReplacePiece(index);
             }
 
             Debug.Log(
                 $"Current pieces: {currentPieces[0].Id}, {currentPieces[1].Id}, {currentPieces[2].Id}");
+        }
+
+        private void ReplacePiece(int index)
+        {
+            currentPieces[index] = pieceLibrary.GetRandom();
+            pieceViews[index].ShowPiece(currentPieces[index]);
+        }
+
+        private bool TrySelectPiece(Vector3 worldPosition)
+        {
+            for (int index = 0; index < pieceViews.Length; index++)
+            {
+                if (!pieceViews[index].ContainsWorldPoint(worldPosition))
+                {
+                    continue;
+                }
+
+                SelectPiece(index);
+                return true;
+            }
+
+            return false;
+        }
+
+        private void SelectPiece(int index)
+        {
+            selectedPieceIndex = index;
+
+            for (int pieceIndex = 0; pieceIndex < pieceViews.Length; pieceIndex++)
+            {
+                pieceViews[pieceIndex].SetSelected(pieceIndex == selectedPieceIndex);
+            }
+        }
+
+        private void TryPlaceSelectedPiece(Vector3 worldPosition)
+        {
+            if (!boardView.TryGetCellPosition(worldPosition, out Vector2Int originCell))
+            {
+                return;
+            }
+
+            PieceDefinition selectedPiece = currentPieces[selectedPieceIndex];
+
+            if (!boardModel.TryPlacePiece(selectedPiece, originCell))
+            {
+                Debug.Log("Piece cannot be placed there.");
+                return;
+            }
+
+            boardView.Refresh();
+            ReplacePiece(selectedPieceIndex);
+            pieceViews[selectedPieceIndex].SetSelected(true);
+
+            if (!boardModel.IsFull)
+            {
+                return;
+            }
+
+            paletteCycleIndex++;
+            boardModel.Clear();
+            boardView.AdvancePalette(paletteCycleIndex);
         }
     }
 }

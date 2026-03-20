@@ -6,10 +6,14 @@ namespace FarmMerger.Pieces
     {
         private const float CellSize = 0.46f;
         private const float CellGap = 0.05f;
+        private const float HitPadding = 0.22f;
 
         private SpriteRenderer[] blockRenderers = new SpriteRenderer[0];
         private Sprite blockSprite;
         private Color activeColor;
+        private PieceDefinition currentPiece;
+        private bool isSelected;
+        private Vector2 boundsSize;
 
         public void Initialize(Color color)
         {
@@ -19,11 +23,13 @@ namespace FarmMerger.Pieces
 
         public void ShowPiece(PieceDefinition piece)
         {
+            currentPiece = piece;
             EnsureRendererCount(piece.Size);
 
             float step = CellSize + CellGap;
             float totalWidth = (piece.Width * CellSize) + ((piece.Width - 1) * CellGap);
             float totalHeight = (piece.Height * CellSize) + ((piece.Height - 1) * CellGap);
+            boundsSize = new Vector2(totalWidth, totalHeight);
             float startX = -((totalWidth - CellSize) * 0.5f);
             float startY = -((totalHeight - CellSize) * 0.5f);
 
@@ -44,8 +50,40 @@ namespace FarmMerger.Pieces
                     startY + (cell.y * step),
                     0f);
                 renderer.transform.localScale = new Vector3(CellSize, CellSize, 1f);
-                renderer.color = activeColor;
+                renderer.color = GetDisplayColor();
             }
+        }
+
+        public void SetSelected(bool selected)
+        {
+            isSelected = selected;
+
+            for (int index = 0; index < blockRenderers.Length; index++)
+            {
+                if (!blockRenderers[index].gameObject.activeSelf)
+                {
+                    continue;
+                }
+
+                blockRenderers[index].color = GetDisplayColor();
+            }
+        }
+
+        public bool ContainsWorldPoint(Vector3 worldPoint)
+        {
+            if (currentPiece == null)
+            {
+                return false;
+            }
+
+            Vector3 localPoint = transform.InverseTransformPoint(worldPoint);
+            float halfWidth = (boundsSize.x * 0.5f) + HitPadding;
+            float halfHeight = (boundsSize.y * 0.5f) + HitPadding;
+
+            return localPoint.x >= -halfWidth
+                && localPoint.x <= halfWidth
+                && localPoint.y >= -halfHeight
+                && localPoint.y <= halfHeight;
         }
 
         private void EnsureRendererCount(int requiredCount)
@@ -91,6 +129,13 @@ namespace FarmMerger.Pieces
             texture.wrapMode = TextureWrapMode.Clamp;
 
             blockSprite = Sprite.Create(texture, new Rect(0f, 0f, 1f, 1f), new Vector2(0.5f, 0.5f), 1f);
+        }
+
+        private Color GetDisplayColor()
+        {
+            return isSelected
+                ? Color.Lerp(activeColor, Color.white, 0.28f)
+                : activeColor;
         }
     }
 }

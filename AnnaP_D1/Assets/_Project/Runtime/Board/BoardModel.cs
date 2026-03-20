@@ -1,3 +1,6 @@
+using FarmMerger.Pieces;
+using UnityEngine;
+
 namespace FarmMerger.Board
 {
     public sealed class BoardModel
@@ -30,6 +33,43 @@ namespace FarmMerger.Board
 
             cells[x, y] = true;
             filledCellCount++;
+            return true;
+        }
+
+        public bool CanPlacePiece(PieceDefinition piece, Vector2Int origin)
+        {
+            for (int index = 0; index < piece.Cells.Length; index++)
+            {
+                Vector2Int targetCell = origin + piece.Cells[index];
+
+                if (targetCell.x < 0 || targetCell.y < 0 || targetCell.x >= Width || targetCell.y >= Height)
+                {
+                    return false;
+                }
+
+                if (cells[targetCell.x, targetCell.y])
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        public bool TryPlacePiece(PieceDefinition piece, Vector2Int origin)
+        {
+            if (!CanPlacePiece(piece, origin))
+            {
+                return false;
+            }
+
+            for (int index = 0; index < piece.Cells.Length; index++)
+            {
+                Vector2Int targetCell = origin + piece.Cells[index];
+                cells[targetCell.x, targetCell.y] = true;
+            }
+
+            filledCellCount += piece.Size;
             return true;
         }
 
