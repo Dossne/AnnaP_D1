@@ -4,6 +4,8 @@ namespace FarmMerger.Board
 {
     public sealed class BoardView : MonoBehaviour
     {
+        private const float BorderPadding = 0.16f;
+
         private SpriteRenderer[,] cellRenderers;
         private BoardConfig config;
         private BoardModel model;
@@ -17,6 +19,7 @@ namespace FarmMerger.Board
             activePaletteColor = config.Palette[0];
 
             CreateSharedSprite();
+            CreateBoardFrame();
             BuildGrid();
             Refresh();
         }
@@ -118,6 +121,36 @@ namespace FarmMerger.Board
                     cellRenderers[x, y] = renderer;
                 }
             }
+        }
+
+        private void CreateBoardFrame()
+        {
+            CreateLayer(
+                "Border",
+                config.TotalWidth + (BorderPadding * 2f),
+                config.TotalHeight + (BorderPadding * 2f),
+                Color.black,
+                -2);
+
+            CreateLayer(
+                "GridBackground",
+                config.TotalWidth,
+                config.TotalHeight,
+                Color.white,
+                -1);
+        }
+
+        private void CreateLayer(string objectName, float width, float height, Color color, int sortingOrder)
+        {
+            GameObject layerObject = new GameObject(objectName);
+            layerObject.transform.SetParent(transform, false);
+            layerObject.transform.localPosition = Vector3.zero;
+            layerObject.transform.localScale = new Vector3(width, height, 1f);
+
+            SpriteRenderer renderer = layerObject.AddComponent<SpriteRenderer>();
+            renderer.sprite = cellSprite;
+            renderer.color = color;
+            renderer.sortingOrder = sortingOrder;
         }
     }
 }
