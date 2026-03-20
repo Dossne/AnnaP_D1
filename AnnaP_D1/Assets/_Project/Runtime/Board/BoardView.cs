@@ -6,7 +6,14 @@ namespace FarmMerger.Board
     public sealed class BoardView : MonoBehaviour
     {
         private const float BorderPadding = 0.16f;
+        private const float BackdropPaddingX = 1.05f;
+        private const float BackdropPaddingY = 0.85f;
         private static readonly Color BorderColor = new Color(0.79f, 0.63f, 0.17f, 1f);
+        private static readonly Color WoodBaseColor = new Color(0.57f, 0.37f, 0.20f, 1f);
+        private static readonly Color WoodPlankLightColor = new Color(0.64f, 0.42f, 0.23f, 1f);
+        private static readonly Color WoodPlankDarkColor = new Color(0.49f, 0.31f, 0.17f, 1f);
+        private static readonly Color ScratchColor = new Color(0.82f, 0.72f, 0.58f, 0.28f);
+        private static readonly Color NailColor = new Color(0.23f, 0.19f, 0.16f, 1f);
         private static readonly Color ValidPreviewColor = new Color(0.34f, 0.78f, 0.40f, 0.65f);
         private static readonly Color InvalidPreviewColor = new Color(0.86f, 0.28f, 0.28f, 0.65f);
 
@@ -24,6 +31,7 @@ namespace FarmMerger.Board
             activePaletteColor = config.Palette[0];
 
             CreateSharedSprite();
+            CreateWoodBackdrop();
             CreateBoardFrame();
             BuildGrid();
             Refresh();
@@ -213,12 +221,62 @@ namespace FarmMerger.Board
                 -1);
         }
 
+        private void CreateWoodBackdrop()
+        {
+            float backdropWidth = config.TotalWidth + (BackdropPaddingX * 2f);
+            float backdropHeight = config.TotalHeight + (BackdropPaddingY * 2f);
+
+            CreateLayer("WoodBase", backdropWidth, backdropHeight, WoodBaseColor, -6);
+
+            float plankHeight = backdropHeight / 4f;
+            for (int index = 0; index < 4; index++)
+            {
+                float y = (backdropHeight * 0.5f) - (plankHeight * 0.5f) - (index * plankHeight);
+                CreateDecorLayer(
+                    $"WoodPlank_{index}",
+                    new Vector3(0f, y, 0f),
+                    new Vector3(backdropWidth, plankHeight - 0.04f, 1f),
+                    index % 2 == 0 ? WoodPlankLightColor : WoodPlankDarkColor,
+                    -5,
+                    0f);
+            }
+
+            CreateDecorLayer("Scratch_A", new Vector3(-1.4f, 0.95f, 0f), new Vector3(1.2f, 0.04f, 1f), ScratchColor, -4, -18f);
+            CreateDecorLayer("Scratch_B", new Vector3(1.15f, -0.35f, 0f), new Vector3(0.95f, 0.04f, 1f), ScratchColor, -4, 16f);
+            CreateDecorLayer("Scratch_C", new Vector3(-0.35f, -1.15f, 0f), new Vector3(1.35f, 0.03f, 1f), ScratchColor, -4, 8f);
+
+            CreateDecorLayer("Nail_TL", new Vector3(-(backdropWidth * 0.5f) + 0.28f, (backdropHeight * 0.5f) - 0.28f, 0f), new Vector3(0.12f, 0.12f, 1f), NailColor, -3, 0f);
+            CreateDecorLayer("Nail_TR", new Vector3((backdropWidth * 0.5f) - 0.28f, (backdropHeight * 0.5f) - 0.28f, 0f), new Vector3(0.12f, 0.12f, 1f), NailColor, -3, 0f);
+            CreateDecorLayer("Nail_BL", new Vector3(-(backdropWidth * 0.5f) + 0.28f, -(backdropHeight * 0.5f) + 0.28f, 0f), new Vector3(0.12f, 0.12f, 1f), NailColor, -3, 0f);
+            CreateDecorLayer("Nail_BR", new Vector3((backdropWidth * 0.5f) - 0.28f, -(backdropHeight * 0.5f) + 0.28f, 0f), new Vector3(0.12f, 0.12f, 1f), NailColor, -3, 0f);
+        }
+
         private void CreateLayer(string objectName, float width, float height, Color color, int sortingOrder)
         {
             GameObject layerObject = new GameObject(objectName);
             layerObject.transform.SetParent(transform, false);
             layerObject.transform.localPosition = Vector3.zero;
             layerObject.transform.localScale = new Vector3(width, height, 1f);
+
+            SpriteRenderer renderer = layerObject.AddComponent<SpriteRenderer>();
+            renderer.sprite = cellSprite;
+            renderer.color = color;
+            renderer.sortingOrder = sortingOrder;
+        }
+
+        private void CreateDecorLayer(
+            string objectName,
+            Vector3 localPosition,
+            Vector3 localScale,
+            Color color,
+            int sortingOrder,
+            float rotationZ)
+        {
+            GameObject layerObject = new GameObject(objectName);
+            layerObject.transform.SetParent(transform, false);
+            layerObject.transform.localPosition = localPosition;
+            layerObject.transform.localRotation = Quaternion.Euler(0f, 0f, rotationZ);
+            layerObject.transform.localScale = localScale;
 
             SpriteRenderer renderer = layerObject.AddComponent<SpriteRenderer>();
             renderer.sprite = cellSprite;
