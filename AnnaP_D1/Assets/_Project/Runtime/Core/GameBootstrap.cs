@@ -7,11 +7,12 @@ namespace FarmMerger.Core
     public sealed class GameBootstrap : MonoBehaviour
     {
         private static readonly Color PieceColor = new Color(0.89f, 0.62f, 0.28f, 1f);
+        private const float TargetPortraitAspect = 720f / 1280f;
         private const int VisiblePieceCount = 3;
-        private const float PieceRowSpacing = 2.3f;
-        private const float BoardOffsetY = 1.7f;
-        private const float PieceRowOffsetY = -1.2f;
-        private const float PieceTrayWidth = 7.7f;
+        private const float PieceRowSpacing = 1.95f;
+        private const float BoardOffsetY = 2.2f;
+        private const float PieceTrayDistanceBelowBoard = 0.95f;
+        private const float PieceTrayWidth = 6.9f;
         private const float PieceTrayHeight = 2.0f;
         private const float PieceTrayThickness = 0.08f;
 
@@ -87,7 +88,7 @@ namespace FarmMerger.Core
             currentPieces = new PieceDefinition[VisiblePieceCount];
             pieceSlotPositions = new Vector3[VisiblePieceCount];
 
-            float baseY = -((boardConfig.TotalHeight * 0.5f) + PieceRowOffsetY);
+            float baseY = BoardOffsetY - ((boardConfig.TotalHeight * 0.5f) + PieceTrayDistanceBelowBoard + (PieceTrayHeight * 0.5f));
             float centerOffset = (VisiblePieceCount - 1) * 0.5f;
 
             CreatePieceTrayFrame(baseY);
@@ -115,9 +116,16 @@ namespace FarmMerger.Core
             }
 
             targetCamera.orthographic = true;
-            targetCamera.transform.position = new Vector3(0f, 1.0f, -10f);
+            targetCamera.transform.position = new Vector3(0f, 0.35f, -10f);
             targetCamera.backgroundColor = new Color(0.55f, 0.38f, 0.24f, 1f);
-            targetCamera.orthographicSize = Mathf.Max(boardConfig.TotalHeight * 0.76f, boardConfig.TotalWidth * 0.55f) + 0.8f;
+
+            float contentTop = BoardOffsetY + (boardConfig.TotalHeight * 0.5f) + 0.45f;
+            float trayCenterY = BoardOffsetY - ((boardConfig.TotalHeight * 0.5f) + PieceTrayDistanceBelowBoard + (PieceTrayHeight * 0.5f));
+            float contentBottom = trayCenterY - (PieceTrayHeight * 0.5f) - 0.45f;
+            float requiredVerticalHalfSize = (contentTop - contentBottom) * 0.5f;
+            float requiredHorizontalHalfSize = (Mathf.Max(boardConfig.TotalWidth, PieceTrayWidth) * 0.5f) + 0.35f;
+
+            targetCamera.orthographicSize = Mathf.Max(requiredVerticalHalfSize, requiredHorizontalHalfSize / TargetPortraitAspect);
         }
 
         private void RollNextPiece()
