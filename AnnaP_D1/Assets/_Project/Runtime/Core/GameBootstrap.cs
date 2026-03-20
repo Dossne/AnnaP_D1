@@ -6,13 +6,15 @@ namespace FarmMerger.Core
 {
     public sealed class GameBootstrap : MonoBehaviour
     {
+        private static readonly Color PieceColor = new Color(0.89f, 0.62f, 0.28f, 1f);
+
         private BoardConfig boardConfig;
         private BoardModel boardModel;
         private BoardView boardView;
         private PieceLibrary pieceLibrary;
+        private PieceView pieceView;
         private PieceDefinition currentPiece;
         private Camera targetCamera;
-        private int paletteCycleIndex;
 
         private void Awake()
         {
@@ -21,6 +23,7 @@ namespace FarmMerger.Core
             pieceLibrary = new PieceLibrary();
 
             CreateBoardView();
+            CreatePieceView();
             ConfigureCamera();
             RollNextPiece();
         }
@@ -32,60 +35,10 @@ namespace FarmMerger.Core
 
         private void HandleDebugInput()
         {
-            if (Input.GetMouseButtonDown(0))
-            {
-                TryFillCellFromPointer();
-            }
-
-            if (Input.GetKeyDown(KeyCode.Space))
-            {
-                boardModel.FillAll();
-                boardView.Refresh();
-                CompleteBoardCycle();
-            }
-
             if (Input.GetKeyDown(KeyCode.R))
             {
                 RollNextPiece();
             }
-        }
-
-        private void TryFillCellFromPointer()
-        {
-            if (targetCamera == null)
-            {
-                return;
-            }
-
-            Vector3 pointerPosition = Input.mousePosition;
-            pointerPosition.z = Mathf.Abs(targetCamera.transform.position.z);
-
-            Vector3 worldPosition = targetCamera.ScreenToWorldPoint(pointerPosition);
-
-            if (!boardView.TryGetCellPosition(worldPosition, out Vector2Int cellPosition))
-            {
-                return;
-            }
-
-            if (!boardModel.TryFillCell(cellPosition.x, cellPosition.y))
-            {
-                return;
-            }
-
-            boardView.Refresh();
-
-            if (boardModel.IsFull)
-            {
-                CompleteBoardCycle();
-            }
-        }
-
-        private void CompleteBoardCycle()
-        {
-            paletteCycleIndex++;
-            boardModel.Clear();
-            boardView.AdvancePalette(paletteCycleIndex);
-            RollNextPiece();
         }
 
         private void CreateBoardView()
@@ -95,6 +48,16 @@ namespace FarmMerger.Core
 
             boardView = boardObject.AddComponent<BoardView>();
             boardView.Initialize(boardConfig, boardModel);
+        }
+
+        private void CreatePieceView()
+        {
+            GameObject pieceObject = new GameObject("CurrentPiece");
+            pieceObject.transform.SetParent(transform, false);
+            pieceObject.transform.localPosition = new Vector3(boardConfig.TotalWidth * 0.65f, 0f, 0f);
+
+            pieceView = pieceObject.AddComponent<PieceView>();
+            pieceView.Initialize(PieceColor);
         }
 
         private void ConfigureCamera()
@@ -109,13 +72,14 @@ namespace FarmMerger.Core
             targetCamera.orthographic = true;
             targetCamera.transform.position = new Vector3(0f, 0f, -10f);
             targetCamera.backgroundColor = new Color(0.93f, 0.96f, 0.98f, 1f);
-            targetCamera.orthographicSize = Mathf.Max(boardConfig.TotalHeight * 0.65f, boardConfig.TotalWidth * 0.42f) + 0.8f;
+            targetCamera.orthographicSize = Mathf.Max(boardConfig.TotalHeight * 0.6f, boardConfig.TotalWidth * 0.72f) + 0.8f;
         }
 
         private void RollNextPiece()
         {
             currentPiece = pieceLibrary.GetRandom();
-            Debug.Log($"Next piece prepared: {currentPiece.Id} ({currentPiece.Size} cells)");
+            pieceView.ShowPiece(currentPiece);
+            Debug.Log($"Current piece: {currentPiece.Id} ({currentPiece.Size} cells, {currentPiece.Width}x{currentPiece.Height})");
         }
     }
 }
