@@ -13,6 +13,7 @@ namespace FarmMerger.Pieces
         private Color activeColor;
         private PieceDefinition currentPiece;
         private bool isSelected;
+        private bool isDragging;
         private Vector2 boundsSize;
 
         public void Initialize(Color color)
@@ -57,7 +58,27 @@ namespace FarmMerger.Pieces
         public void SetSelected(bool selected)
         {
             isSelected = selected;
+            RefreshColors();
+        }
 
+        public void SetDragging(bool dragging)
+        {
+            isDragging = dragging;
+            RefreshColors();
+
+            for (int index = 0; index < blockRenderers.Length; index++)
+            {
+                if (!blockRenderers[index].gameObject.activeSelf)
+                {
+                    continue;
+                }
+
+                blockRenderers[index].sortingOrder = isDragging ? 5 : 1;
+            }
+        }
+
+        private void RefreshColors()
+        {
             for (int index = 0; index < blockRenderers.Length; index++)
             {
                 if (!blockRenderers[index].gameObject.activeSelf)
@@ -133,9 +154,12 @@ namespace FarmMerger.Pieces
 
         private Color GetDisplayColor()
         {
-            return isSelected
+            Color color = isSelected
                 ? Color.Lerp(activeColor, Color.white, 0.28f)
                 : activeColor;
+
+            color.a = isDragging ? 0.82f : 1f;
+            return color;
         }
     }
 }

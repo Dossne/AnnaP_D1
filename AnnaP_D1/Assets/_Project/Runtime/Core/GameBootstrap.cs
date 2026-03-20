@@ -16,9 +16,12 @@ namespace FarmMerger.Core
         private PieceLibrary pieceLibrary;
         private PieceView[] pieceViews;
         private PieceDefinition[] currentPieces;
+        private Vector3[] pieceSlotPositions;
         private Camera targetCamera;
         private int paletteCycleIndex;
         private int selectedPieceIndex;
+        private bool isDraggingPiece;
+        private int draggedPieceIndex = -1;
 
         private void Awake()
         {
@@ -42,7 +45,17 @@ namespace FarmMerger.Core
         {
             if (Input.GetMouseButtonDown(0))
             {
-                HandlePrimaryClick();
+                TryBeginPieceDrag();
+            }
+
+            if (isDraggingPiece && Input.GetMouseButton(0))
+            {
+                UpdateDraggedPiecePosition();
+            }
+
+            if (isDraggingPiece && Input.GetMouseButtonUp(0))
+            {
+                ReleaseDraggedPiece();
             }
 
             if (Input.GetKeyDown(KeyCode.R))
@@ -50,26 +63,6 @@ namespace FarmMerger.Core
                 RollNextPiece();
                 SelectPiece(0);
             }
-        }
-
-        private void HandlePrimaryClick()
-        {
-            if (targetCamera == null)
-            {
-                return;
-            }
-
-            Vector3 pointerPosition = Input.mousePosition;
-            pointerPosition.z = Mathf.Abs(targetCamera.transform.position.z);
-
-            Vector3 worldPosition = targetCamera.ScreenToWorldPoint(pointerPosition);
-
-            if (TrySelectPiece(worldPosition))
-            {
-                return;
-            }
-
-            TryPlaceSelectedPiece(worldPosition);
         }
 
         private void CreateBoardView()
@@ -85,6 +78,7 @@ namespace FarmMerger.Core
         {
             pieceViews = new PieceView[VisiblePieceCount];
             currentPieces = new PieceDefinition[VisiblePieceCount];
+            pieceSlotPositions = new Vector3[VisiblePieceCount];
 
             float baseY = -((boardConfig.TotalHeight * 0.5f) + 1.2f);
             float centerOffset = (VisiblePieceCount - 1) * 0.5f;
@@ -93,7 +87,8 @@ namespace FarmMerger.Core
             {
                 GameObject pieceObject = new GameObject($"CurrentPiece_{index}");
                 pieceObject.transform.SetParent(transform, false);
-                pieceObject.transform.localPosition = new Vector3((index - centerOffset) * PieceRowSpacing, baseY, 0f);
+                pieceSlotPositions[index] = new Vector3((index - centerOffset) * PieceRowSpacing, baseY, 0f);
+                pieceObject.transform.localPosition = pieceSlotPositions[index];
 
                 PieceView pieceView = pieceObject.AddComponent<PieceView>();
                 pieceView.Initialize(PieceColor);
@@ -131,6 +126,8 @@ namespace FarmMerger.Core
         {
             currentPieces[index] = pieceLibrary.GetRandom();
             pieceViews[index].ShowPiece(currentPieces[index]);
+            pieceViews[index].transform.localPosition = pieceSlotPositions[index];
+            pieceViews[index].SetDragging(false);
         }
 
         private bool TrySelectPiece(Vector3 worldPosition)
@@ -159,33 +156,88 @@ namespace FarmMerger.Core
             }
         }
 
-        private void TryPlaceSelectedPiece(Vector3 worldPosition)
+        private void TryBeginPieceDrag()
         {
-            if (!boardView.TryGetCellPosition(worldPosition, out Vector2Int originCell))
+            Vector3 worldPosition = GetPointerWorldPosition();
+
+            if (!TrySelectPiece(worldPosition))
             {
                 return;
             }
 
-            PieceDefinition selectedPiece = currentPieces[selectedPieceIndex];
+            isDraggingPiece = true;
+            draggedPieceIndex = selectedPieceIndex;
+            pieceViews[draggedPieceIndex].SetDragging(true);
+            UpdateDraggedPiecePosition();
+        }
+
+        private void UpdateDraggedPiecePosition()
+        {
+            if (!isDraggingPiece)
+            {
+                return;
+            }
+
+            Vector3 worldPosition = GetPointerWorldPosition();
+            pieceViews[draggedPieceIndex].transform.position = new Vector3(worldPosition.x, worldPosition.y, 0f);
+        }
+
+        private void ReleaseDraggedPiece()
+        {
+            Vector3 worldPosition = GetPointerWorldPosition();
+            int pieceIndex = draggedPieceIndex;
+
+            isDraggingPiece = false;
+            draggedPieceIndex = -1;
+
+            if (TryPlacePieceAtWorldPosition(pieceIndex, worldPosition))
+            {
+                return;
+            }
+
+            pieceViews[pieceIndex].SetDragging(false);
+            pieceViews[pieceIndex].transform.localPosition = pieceSlotPositions[pieceIndex];
+        }
+
+        private bool TryPlacePieceAtWorldPosition(int pieceIndex, Vector3 worldPosition)
+        {
+            if (!boardView.TryGetCellPosition(worldPosition, out Vector2Int originCell))
+            {
+                return false;
+            }
+
+            PieceDefinition selectedPiece = currentPieces[pieceIndex];
 
             if (!boardModel.TryPlacePiece(selectedPiece, originCell))
             {
                 Debug.Log("Piece cannot be placed there.");
-                return;
+                return false;
             }
 
             boardView.Refresh();
-            ReplacePiece(selectedPieceIndex);
-            pieceViews[selectedPieceIndex].SetSelected(true);
+            ReplacePiece(pieceIndex);
+            pieceViews[pieceIndex].SetSelected(true);
 
-            if (!boardModel.IsFull)
+            if (boardModel.IsFull)
             {
-                return;
+                paletteCycleIndex++;
+                boardModel.Clear();
+                boardView.AdvancePalette(paletteCycleIndex);
             }
 
-            paletteCycleIndex++;
-            boardModel.Clear();
-            boardView.AdvancePalette(paletteCycleIndex);
+            return true;
+        }
+
+        private Vector3 GetPointerWorldPosition()
+        {
+            if (targetCamera == null)
+            {
+                return Vector3.zero;
+            }
+
+            Vector3 pointerPosition = Input.mousePosition;
+            pointerPosition.z = Mathf.Abs(targetCamera.transform.position.z);
+            return targetCamera.ScreenToWorldPoint(pointerPosition);
         }
     }
 }
