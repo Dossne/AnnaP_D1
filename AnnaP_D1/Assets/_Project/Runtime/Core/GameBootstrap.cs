@@ -10,7 +10,7 @@ namespace FarmMerger.Core
         private const int VisiblePieceCount = 3;
         private const float PieceRowSpacing = 2.3f;
         private const float BoardOffsetY = 1.7f;
-        private const float PieceRowOffsetY = -0.85f;
+        private const float PieceRowOffsetY = -1.2f;
         private const float PieceTrayWidth = 7.7f;
         private const float PieceTrayHeight = 2.0f;
         private const float PieceTrayThickness = 0.08f;
