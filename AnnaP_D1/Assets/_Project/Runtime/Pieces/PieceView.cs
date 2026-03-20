@@ -7,14 +7,27 @@ namespace FarmMerger.Pieces
         private const float CellSize = 0.46f;
         private const float CellGap = 0.05f;
         private const float HitPadding = 0.22f;
+        private const float ShadowOffsetY = -0.08f;
+        private const float ShadowSquash = 0.82f;
+        private const float BounceSpeed = 14f;
 
         private SpriteRenderer[] blockRenderers = new SpriteRenderer[0];
+        private SpriteRenderer[] shadowRenderers = new SpriteRenderer[0];
+        private Vector3[] blockBasePositions = new Vector3[0];
         private Sprite blockSprite;
         private Color activeColor;
         private PieceDefinition currentPiece;
         private bool isSelected;
         private bool isDragging;
         private Vector2 boundsSize;
+        private float animationTime = 1f;
+        private Vector3 animatedScale = Vector3.one;
+        private Vector3 animatedOffset = Vector3.zero;
+
+        private void Update()
+        {
+            UpdateSelectionAnimation();
+        }
 
         public void Initialize(Color color)
         {
@@ -32,7 +45,7 @@ namespace FarmMerger.Pieces
             float totalHeight = (piece.Height * CellSize) + ((piece.Height - 1) * CellGap);
             boundsSize = new Vector2(totalWidth, totalHeight);
             float startX = -((totalWidth - CellSize) * 0.5f);
-            float startY = -((totalHeight - CellSize) * 0.5f);
+            float startY = -0.35f;
 
             for (int index = 0; index < blockRenderers.Length; index++)
             {
@@ -46,17 +59,27 @@ namespace FarmMerger.Pieces
                 }
 
                 Vector2Int cell = piece.Cells[index];
-                renderer.transform.localPosition = new Vector3(
+                Vector3 blockPosition = new Vector3(
                     startX + (cell.x * step),
                     startY + (cell.y * step),
                     0f);
+                blockBasePositions[index] = blockPosition;
+                renderer.transform.localPosition = blockPosition;
                 renderer.transform.localScale = new Vector3(CellSize, CellSize, 1f);
                 renderer.color = GetDisplayColor();
             }
+
+            RefreshShadowColors();
+            ApplyAnimatedTransforms();
         }
 
         public void SetSelected(bool selected)
         {
+            if (selected && !isSelected)
+            {
+                animationTime = 0f;
+            }
+
             isSelected = selected;
             RefreshColors();
         }
@@ -88,6 +111,8 @@ namespace FarmMerger.Pieces
 
                 blockRenderers[index].color = GetDisplayColor();
             }
+
+            RefreshShadowColors();
         }
 
         public bool ContainsWorldPoint(Vector3 worldPoint)
@@ -115,14 +140,26 @@ namespace FarmMerger.Pieces
             }
 
             SpriteRenderer[] newRenderers = new SpriteRenderer[requiredCount];
+            SpriteRenderer[] newShadowRenderers = new SpriteRenderer[requiredCount];
+            Vector3[] newBasePositions = new Vector3[requiredCount];
 
             for (int index = 0; index < newRenderers.Length; index++)
             {
                 if (index < blockRenderers.Length)
                 {
                     newRenderers[index] = blockRenderers[index];
+                    newShadowRenderers[index] = shadowRenderers[index];
+                    newBasePositions[index] = blockBasePositions[index];
                     continue;
                 }
+
+                GameObject shadowObject = new GameObject($"PieceShadow_{index}");
+                shadowObject.transform.SetParent(transform, false);
+
+                SpriteRenderer shadowRenderer = shadowObject.AddComponent<SpriteRenderer>();
+                shadowRenderer.sprite = blockSprite;
+                shadowRenderer.sortingOrder = 0;
+                newShadowRenderers[index] = shadowRenderer;
 
                 GameObject blockObject = new GameObject($"PieceCell_{index}");
                 blockObject.transform.SetParent(transform, false);
@@ -134,6 +171,8 @@ namespace FarmMerger.Pieces
             }
 
             blockRenderers = newRenderers;
+            shadowRenderers = newShadowRenderers;
+            blockBasePositions = newBasePositions;
         }
 
         private void CreateSharedSprite()
@@ -160,6 +199,66 @@ namespace FarmMerger.Pieces
 
             color.a = isDragging ? 0.82f : 1f;
             return color;
+        }
+
+        private void UpdateSelectionAnimation()
+        {
+            if (animationTime < 1f)
+            {
+                animationTime = Mathf.Min(1f, animationTime + (Time.deltaTime * 3.2f));
+            }
+
+            float press = 1f - Mathf.Clamp01(animationTime * BounceSpeed);
+            float bounce = Mathf.Sin(Mathf.Clamp01(animationTime) * Mathf.PI) * 0.16f;
+            float selectedBoost = isSelected ? 0.04f : 0f;
+            float scaleValue = 1f - (press * 0.12f) + bounce + selectedBoost;
+
+            animatedScale = new Vector3(scaleValue, scaleValue, 1f);
+            animatedOffset = new Vector3(0f, -(press * 0.08f), 0f);
+
+            ApplyAnimatedTransforms();
+        }
+
+        private void ApplyAnimatedTransforms()
+        {
+            for (int index = 0; index < blockRenderers.Length; index++)
+            {
+                if (!blockRenderers[index].gameObject.activeSelf)
+                {
+                    continue;
+                }
+
+                blockRenderers[index].transform.localScale = new Vector3(
+                    CellSize * animatedScale.x,
+                    CellSize * animatedScale.y,
+                    1f);
+
+                Vector3 baseLocalPosition = blockBasePositions[index];
+                blockRenderers[index].transform.localPosition = baseLocalPosition + animatedOffset;
+
+                shadowRenderers[index].transform.localPosition = new Vector3(baseLocalPosition.x, baseLocalPosition.y + ShadowOffsetY, 0f);
+                shadowRenderers[index].transform.localScale = new Vector3(
+                    CellSize * animatedScale.x,
+                    CellSize * ShadowSquash,
+                    1f);
+            }
+        }
+
+        private void RefreshShadowColors()
+        {
+            for (int index = 0; index < shadowRenderers.Length; index++)
+            {
+                bool isActive = index < blockRenderers.Length && blockRenderers[index].gameObject.activeSelf;
+                shadowRenderers[index].gameObject.SetActive(isActive);
+
+                if (!isActive)
+                {
+                    continue;
+                }
+
+                Color shadowColor = new Color(0.34f, 0.23f, 0.10f, isDragging ? 0.16f : 0.24f);
+                shadowRenderers[index].color = shadowColor;
+            }
         }
     }
 }
