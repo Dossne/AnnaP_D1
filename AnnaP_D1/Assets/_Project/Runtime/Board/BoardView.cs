@@ -1,3 +1,4 @@
+using FarmMerger.Pieces;
 using UnityEngine;
 
 namespace FarmMerger.Board
@@ -5,8 +6,11 @@ namespace FarmMerger.Board
     public sealed class BoardView : MonoBehaviour
     {
         private const float BorderPadding = 0.16f;
+        private static readonly Color ValidPreviewColor = new Color(0.34f, 0.78f, 0.40f, 0.65f);
+        private static readonly Color InvalidPreviewColor = new Color(0.86f, 0.28f, 0.28f, 0.65f);
 
         private SpriteRenderer[,] cellRenderers;
+        private SpriteRenderer[] previewRenderers = new SpriteRenderer[0];
         private BoardConfig config;
         private BoardModel model;
         private Sprite cellSprite;
@@ -82,6 +86,44 @@ namespace FarmMerger.Board
             return true;
         }
 
+        public void ShowPlacementPreview(PieceDefinition piece, Vector2Int originCell, bool isValid)
+        {
+            EnsurePreviewRendererCount(piece.Size);
+
+            Color previewColor = isValid ? ValidPreviewColor : InvalidPreviewColor;
+            float step = config.CellSize + config.CellGap;
+            float startX = -((config.TotalWidth - config.CellSize) * 0.5f);
+            float startY = -((config.TotalHeight - config.CellSize) * 0.5f);
+
+            for (int index = 0; index < previewRenderers.Length; index++)
+            {
+                bool isActive = index < piece.Size;
+                SpriteRenderer renderer = previewRenderers[index];
+                renderer.gameObject.SetActive(isActive);
+
+                if (!isActive)
+                {
+                    continue;
+                }
+
+                Vector2Int targetCell = originCell + piece.Cells[index];
+                renderer.transform.localPosition = new Vector3(
+                    startX + (targetCell.x * step),
+                    startY + (targetCell.y * step),
+                    0f);
+                renderer.transform.localScale = new Vector3(config.CellSize, config.CellSize, 1f);
+                renderer.color = previewColor;
+            }
+        }
+
+        public void HidePlacementPreview()
+        {
+            for (int index = 0; index < previewRenderers.Length; index++)
+            {
+                previewRenderers[index].gameObject.SetActive(false);
+            }
+        }
+
         private void CreateSharedSprite()
         {
             if (cellSprite != null)
@@ -121,6 +163,36 @@ namespace FarmMerger.Board
                     cellRenderers[x, y] = renderer;
                 }
             }
+        }
+
+        private void EnsurePreviewRendererCount(int requiredCount)
+        {
+            if (previewRenderers.Length >= requiredCount)
+            {
+                return;
+            }
+
+            SpriteRenderer[] newRenderers = new SpriteRenderer[requiredCount];
+
+            for (int index = 0; index < newRenderers.Length; index++)
+            {
+                if (index < previewRenderers.Length)
+                {
+                    newRenderers[index] = previewRenderers[index];
+                    continue;
+                }
+
+                GameObject previewObject = new GameObject($"PreviewCell_{index}");
+                previewObject.transform.SetParent(transform, false);
+
+                SpriteRenderer renderer = previewObject.AddComponent<SpriteRenderer>();
+                renderer.sprite = cellSprite;
+                renderer.sortingOrder = 2;
+                renderer.gameObject.SetActive(false);
+                newRenderers[index] = renderer;
+            }
+
+            previewRenderers = newRenderers;
         }
 
         private void CreateBoardFrame()

@@ -180,6 +180,7 @@ namespace FarmMerger.Core
 
             Vector3 worldPosition = GetPointerWorldPosition();
             pieceViews[draggedPieceIndex].transform.position = new Vector3(worldPosition.x, worldPosition.y, 0f);
+            UpdatePlacementPreview(worldPosition);
         }
 
         private void ReleaseDraggedPiece()
@@ -189,6 +190,7 @@ namespace FarmMerger.Core
 
             isDraggingPiece = false;
             draggedPieceIndex = -1;
+            boardView.HidePlacementPreview();
 
             if (TryPlacePieceAtWorldPosition(pieceIndex, worldPosition))
             {
@@ -226,6 +228,20 @@ namespace FarmMerger.Core
             }
 
             return true;
+        }
+
+        private void UpdatePlacementPreview(Vector3 worldPosition)
+        {
+            PieceDefinition draggedPiece = currentPieces[draggedPieceIndex];
+
+            if (!boardView.TryGetCellPosition(worldPosition, out Vector2Int originCell))
+            {
+                boardView.HidePlacementPreview();
+                return;
+            }
+
+            bool isValid = boardModel.CanPlacePiece(draggedPiece, originCell);
+            boardView.ShowPlacementPreview(draggedPiece, originCell, isValid);
         }
 
         private Vector3 GetPointerWorldPosition()
