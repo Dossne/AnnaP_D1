@@ -7,8 +7,12 @@ namespace FarmMerger.Pieces
         private const float CellSize = 0.46f;
         private const float CellGap = 0.05f;
         private const float HitPadding = 0.22f;
+        private const float FrameWidth = 1.9f;
+        private const float FrameHeight = 1.7f;
+        private const float FrameThickness = 0.08f;
 
         private SpriteRenderer[] blockRenderers = new SpriteRenderer[0];
+        private SpriteRenderer[] frameRenderers = new SpriteRenderer[0];
         private Sprite blockSprite;
         private Color activeColor;
         private PieceDefinition currentPiece;
@@ -20,6 +24,7 @@ namespace FarmMerger.Pieces
         {
             activeColor = color;
             CreateSharedSprite();
+            CreateFrame();
         }
 
         public void ShowPiece(PieceDefinition piece)
@@ -160,6 +165,35 @@ namespace FarmMerger.Pieces
 
             color.a = isDragging ? 0.82f : 1f;
             return color;
+        }
+
+        private void CreateFrame()
+        {
+            frameRenderers = new SpriteRenderer[4];
+
+            for (int index = 0; index < frameRenderers.Length; index++)
+            {
+                GameObject frameObject = new GameObject($"Frame_{index}");
+                frameObject.transform.SetParent(transform, false);
+
+                SpriteRenderer renderer = frameObject.AddComponent<SpriteRenderer>();
+                renderer.sprite = blockSprite;
+                renderer.color = Color.white;
+                renderer.sortingOrder = 0;
+                frameRenderers[index] = renderer;
+            }
+
+            frameRenderers[0].transform.localPosition = new Vector3(0f, FrameHeight * 0.5f, 0f);
+            frameRenderers[0].transform.localScale = new Vector3(FrameWidth, FrameThickness, 1f);
+
+            frameRenderers[1].transform.localPosition = new Vector3(0f, -(FrameHeight * 0.5f), 0f);
+            frameRenderers[1].transform.localScale = new Vector3(FrameWidth, FrameThickness, 1f);
+
+            frameRenderers[2].transform.localPosition = new Vector3(-(FrameWidth * 0.5f), 0f, 0f);
+            frameRenderers[2].transform.localScale = new Vector3(FrameThickness, FrameHeight + FrameThickness, 1f);
+
+            frameRenderers[3].transform.localPosition = new Vector3(FrameWidth * 0.5f, 0f, 0f);
+            frameRenderers[3].transform.localScale = new Vector3(FrameThickness, FrameHeight + FrameThickness, 1f);
         }
     }
 }

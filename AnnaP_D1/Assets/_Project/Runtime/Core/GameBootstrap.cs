@@ -9,6 +9,7 @@ namespace FarmMerger.Core
         private static readonly Color PieceColor = new Color(0.89f, 0.62f, 0.28f, 1f);
         private const int VisiblePieceCount = 3;
         private const float PieceRowSpacing = 2.3f;
+        private const float BoardOffsetY = 0.4f;
 
         private BoardConfig boardConfig;
         private BoardModel boardModel;
@@ -69,6 +70,7 @@ namespace FarmMerger.Core
         {
             GameObject boardObject = new GameObject("Board");
             boardObject.transform.SetParent(transform, false);
+            boardObject.transform.localPosition = new Vector3(0f, BoardOffsetY, 0f);
 
             boardView = boardObject.AddComponent<BoardView>();
             boardView.Initialize(boardConfig, boardModel);
@@ -106,7 +108,7 @@ namespace FarmMerger.Core
             }
 
             targetCamera.orthographic = true;
-            targetCamera.transform.position = new Vector3(0f, 0f, -10f);
+            targetCamera.transform.position = new Vector3(0f, 0.25f, -10f);
             targetCamera.backgroundColor = new Color(0.55f, 0.38f, 0.24f, 1f);
             targetCamera.orthographicSize = Mathf.Max(boardConfig.TotalHeight * 0.76f, boardConfig.TotalWidth * 0.55f) + 0.8f;
         }
