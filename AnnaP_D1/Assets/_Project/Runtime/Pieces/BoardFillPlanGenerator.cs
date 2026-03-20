@@ -16,9 +16,14 @@ namespace FarmMerger.Pieces
         public bool TryGeneratePlan(int width, int height, out List<PieceDefinition> plan)
         {
             bool[,] occupiedCells = new bool[width, height];
+            return TryGeneratePlan(occupiedCells, out plan);
+        }
+
+        public bool TryGeneratePlan(bool[,] occupiedCells, out List<PieceDefinition> plan)
+        {
             workingPlan.Clear();
 
-            bool success = TryFillBoard(width, height, occupiedCells);
+            bool success = TryFillBoard(occupiedCells.GetLength(0), occupiedCells.GetLength(1), occupiedCells);
             plan = success ? new List<PieceDefinition>(workingPlan) : null;
 
             if (success)

@@ -73,6 +73,21 @@ namespace FarmMerger.Board
             return true;
         }
 
+        public bool[,] CreateSnapshot()
+        {
+            bool[,] snapshot = new bool[Width, Height];
+
+            for (int y = 0; y < Height; y++)
+            {
+                for (int x = 0; x < Width; x++)
+                {
+                    snapshot[x, y] = cells[x, y];
+                }
+            }
+
+            return snapshot;
+        }
+
         public void FillAll()
         {
             for (int y = 0; y < Height; y++)

@@ -349,7 +349,7 @@ namespace FarmMerger.Core
                 return false;
             }
 
-            if (boardModel.CanPlacePiece(piece, hoveredCell))
+            if (CanPlacePieceAndRemainSolvable(piece, hoveredCell))
             {
                 resolvedOrigin = hoveredCell;
                 isValid = true;
@@ -367,7 +367,7 @@ namespace FarmMerger.Core
                 {
                     Vector2Int candidateOrigin = new Vector2Int(hoveredCell.x + offsetX, hoveredCell.y + offsetY);
 
-                    if (!boardModel.CanPlacePiece(piece, candidateOrigin))
+                    if (!CanPlacePieceAndRemainSolvable(piece, candidateOrigin))
                     {
                         continue;
                     }
@@ -391,7 +391,7 @@ namespace FarmMerger.Core
 
         private void GeneratePlannedPieces()
         {
-            if (fillPlanGenerator.TryGeneratePlan(boardConfig.Width, boardConfig.Height, out List<PieceDefinition> plan))
+            if (fillPlanGenerator.TryGeneratePlan(boardModel.CreateSnapshot(), out List<PieceDefinition> plan))
             {
                 plannedPieces = new Queue<PieceDefinition>(plan);
                 return;
@@ -417,6 +417,24 @@ namespace FarmMerger.Core
             }
 
             plannedPieces = new Queue<PieceDefinition>(fallbackPieces);
+        }
+
+        private bool CanPlacePieceAndRemainSolvable(PieceDefinition piece, Vector2Int origin)
+        {
+            if (!boardModel.CanPlacePiece(piece, origin))
+            {
+                return false;
+            }
+
+            bool[,] snapshot = boardModel.CreateSnapshot();
+
+            for (int index = 0; index < piece.Cells.Length; index++)
+            {
+                Vector2Int targetCell = origin + piece.Cells[index];
+                snapshot[targetCell.x, targetCell.y] = true;
+            }
+
+            return fillPlanGenerator.TryGeneratePlan(snapshot, out _);
         }
     }
 }
