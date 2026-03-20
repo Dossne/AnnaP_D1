@@ -40,7 +40,7 @@ namespace FarmMerger.Board
                 height: 10,
                 cellSize: 0.56f,
                 cellGap: 0.06f,
-                baseColor: new Color(0.98f, 0.92f, 0.55f, 1f),
+                baseColor: new Color(0.97f, 0.85f, 0.38f, 1f),
                 filledColor: new Color(0.35f, 0.56f, 0.33f, 1f),
                 palette: new[]
                 {
