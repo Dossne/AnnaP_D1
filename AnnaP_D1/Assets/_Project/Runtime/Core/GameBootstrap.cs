@@ -7,13 +7,15 @@ namespace FarmMerger.Core
     public sealed class GameBootstrap : MonoBehaviour
     {
         private static readonly Color PieceColor = new Color(0.89f, 0.62f, 0.28f, 1f);
+        private const int VisiblePieceCount = 3;
+        private const float PieceRowSpacing = 2.3f;
 
         private BoardConfig boardConfig;
         private BoardModel boardModel;
         private BoardView boardView;
         private PieceLibrary pieceLibrary;
-        private PieceView pieceView;
-        private PieceDefinition currentPiece;
+        private PieceView[] pieceViews;
+        private PieceDefinition[] currentPieces;
         private Camera targetCamera;
 
         private void Awake()
@@ -52,12 +54,22 @@ namespace FarmMerger.Core
 
         private void CreatePieceView()
         {
-            GameObject pieceObject = new GameObject("CurrentPiece");
-            pieceObject.transform.SetParent(transform, false);
-            pieceObject.transform.localPosition = new Vector3(0f, -((boardConfig.TotalHeight * 0.5f) + 1.2f), 0f);
+            pieceViews = new PieceView[VisiblePieceCount];
+            currentPieces = new PieceDefinition[VisiblePieceCount];
 
-            pieceView = pieceObject.AddComponent<PieceView>();
-            pieceView.Initialize(PieceColor);
+            float baseY = -((boardConfig.TotalHeight * 0.5f) + 1.2f);
+            float centerOffset = (VisiblePieceCount - 1) * 0.5f;
+
+            for (int index = 0; index < VisiblePieceCount; index++)
+            {
+                GameObject pieceObject = new GameObject($"CurrentPiece_{index}");
+                pieceObject.transform.SetParent(transform, false);
+                pieceObject.transform.localPosition = new Vector3((index - centerOffset) * PieceRowSpacing, baseY, 0f);
+
+                PieceView pieceView = pieceObject.AddComponent<PieceView>();
+                pieceView.Initialize(PieceColor);
+                pieceViews[index] = pieceView;
+            }
         }
 
         private void ConfigureCamera()
@@ -77,9 +89,14 @@ namespace FarmMerger.Core
 
         private void RollNextPiece()
         {
-            currentPiece = pieceLibrary.GetRandom();
-            pieceView.ShowPiece(currentPiece);
-            Debug.Log($"Current piece: {currentPiece.Id} ({currentPiece.Size} cells, {currentPiece.Width}x{currentPiece.Height})");
+            for (int index = 0; index < VisiblePieceCount; index++)
+            {
+                currentPieces[index] = pieceLibrary.GetRandom();
+                pieceViews[index].ShowPiece(currentPieces[index]);
+            }
+
+            Debug.Log(
+                $"Current pieces: {currentPieces[0].Id}, {currentPieces[1].Id}, {currentPieces[2].Id}");
         }
     }
 }
