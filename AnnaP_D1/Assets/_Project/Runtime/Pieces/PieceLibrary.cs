@@ -12,13 +12,7 @@ namespace FarmMerger.Pieces
             List<PieceDefinition> definitions = new List<PieceDefinition>();
 
             AddVariants(definitions, "Bar3", new Vector2Int(0, 0), new Vector2Int(1, 0), new Vector2Int(2, 0));
-            AddVariants(definitions, "Bar4", new Vector2Int(0, 0), new Vector2Int(1, 0), new Vector2Int(2, 0), new Vector2Int(3, 0));
-            AddVariants(definitions, "Square2", new Vector2Int(0, 0), new Vector2Int(1, 0), new Vector2Int(0, 1), new Vector2Int(1, 1));
             AddVariants(definitions, "L3", new Vector2Int(0, 0), new Vector2Int(0, 1), new Vector2Int(1, 0));
-            AddVariants(definitions, "L4", new Vector2Int(0, 0), new Vector2Int(0, 1), new Vector2Int(0, 2), new Vector2Int(1, 0));
-            AddVariants(definitions, "T4", new Vector2Int(0, 0), new Vector2Int(1, 0), new Vector2Int(2, 0), new Vector2Int(1, 1));
-            AddVariants(definitions, "Z4", new Vector2Int(0, 0), new Vector2Int(1, 0), new Vector2Int(1, 1), new Vector2Int(2, 1));
-            AddVariants(definitions, "Corner5", new Vector2Int(0, 0), new Vector2Int(0, 1), new Vector2Int(0, 2), new Vector2Int(1, 2), new Vector2Int(2, 2));
 
             pieces = definitions.ToArray();
         }
