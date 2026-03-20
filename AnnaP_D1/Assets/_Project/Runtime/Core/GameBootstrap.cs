@@ -83,7 +83,7 @@ namespace FarmMerger.Core
 
             targetCamera.orthographic = true;
             targetCamera.transform.position = new Vector3(0f, 0f, -10f);
-            targetCamera.backgroundColor = new Color(0.93f, 0.96f, 0.98f, 1f);
+            targetCamera.backgroundColor = new Color(0.55f, 0.38f, 0.24f, 1f);
             targetCamera.orthographicSize = Mathf.Max(boardConfig.TotalHeight * 0.76f, boardConfig.TotalWidth * 0.55f) + 0.8f;
         }
 
