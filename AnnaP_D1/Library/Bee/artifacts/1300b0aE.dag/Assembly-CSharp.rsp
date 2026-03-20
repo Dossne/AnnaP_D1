@@ -365,6 +365,7 @@
 "Assets/_Project/Runtime/Board/BoardModel.cs"
 "Assets/_Project/Runtime/Board/BoardView.cs"
 "Assets/_Project/Runtime/Core/GameBootstrap.cs"
+"Assets/_Project/Runtime/Pieces/BoardFillPlanGenerator.cs"
 "Assets/_Project/Runtime/Pieces/PieceDefinition.cs"
 "Assets/_Project/Runtime/Pieces/PieceLibrary.cs"
 "Assets/_Project/Runtime/Pieces/PieceView.cs"

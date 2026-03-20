@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using FarmMerger.Board;
 using FarmMerger.Pieces;
 using UnityEngine;
@@ -12,7 +13,7 @@ namespace FarmMerger.Core
         private const int VisiblePieceCount = 3;
         private const float PieceRowSpacing = 1.95f;
         private const float BoardOffsetY = 2.2f;
-        private const float PieceTrayDistanceBelowBoard = 0.95f;
+        private const float PieceTrayDistanceBelowBoard = 1.25f;
         private const float PieceTrayWidth = 6.9f;
         private const float PieceTrayHeight = 2.0f;
         private const float PieceTrayThickness = 0.08f;
@@ -21,11 +22,13 @@ namespace FarmMerger.Core
         private BoardModel boardModel;
         private BoardView boardView;
         private PieceLibrary pieceLibrary;
+        private BoardFillPlanGenerator fillPlanGenerator;
         private PieceView[] pieceViews;
         private PieceDefinition[] currentPieces;
         private Vector3[] pieceSlotPositions;
         private Camera targetCamera;
         private Sprite sharedSprite;
+        private Queue<PieceDefinition> plannedPieces = new Queue<PieceDefinition>();
         private int paletteCycleIndex;
         private int selectedPieceIndex;
         private bool isDraggingPiece;
@@ -36,11 +39,13 @@ namespace FarmMerger.Core
             boardConfig = BoardConfig.CreateDefault();
             boardModel = new BoardModel(boardConfig.Width, boardConfig.Height);
             pieceLibrary = new PieceLibrary();
+            fillPlanGenerator = new BoardFillPlanGenerator(pieceLibrary.Pieces);
 
             CreateBoardView();
             CreatePieceView();
             ConfigureCamera();
-            RollNextPiece();
+            GeneratePlannedPieces();
+            FillVisiblePieces();
             SelectPiece(0);
         }
 
@@ -68,7 +73,8 @@ namespace FarmMerger.Core
 
             if (Input.GetKeyDown(KeyCode.R))
             {
-                RollNextPiece();
+                GeneratePlannedPieces();
+                FillVisiblePieces();
                 SelectPiece(0);
             }
         }
@@ -129,7 +135,7 @@ namespace FarmMerger.Core
             targetCamera.orthographicSize = Mathf.Max(requiredVerticalHalfSize, requiredHorizontalHalfSize / TargetPortraitAspect);
         }
 
-        private void RollNextPiece()
+        private void FillVisiblePieces()
         {
             for (int index = 0; index < VisiblePieceCount; index++)
             {
@@ -142,7 +148,12 @@ namespace FarmMerger.Core
 
         private void ReplacePiece(int index)
         {
-            currentPieces[index] = pieceLibrary.GetRandom();
+            if (plannedPieces.Count == 0)
+            {
+                GeneratePlannedPieces();
+            }
+
+            currentPieces[index] = plannedPieces.Dequeue();
             pieceViews[index].ShowPiece(currentPieces[index]);
             pieceViews[index].transform.localPosition = pieceSlotPositions[index];
             pieceViews[index].SetDragging(false);
@@ -235,14 +246,20 @@ namespace FarmMerger.Core
             }
 
             boardView.Refresh();
-            ReplacePiece(pieceIndex);
-            pieceViews[pieceIndex].SetSelected(true);
 
             if (boardModel.IsFull)
             {
                 paletteCycleIndex++;
                 boardModel.Clear();
                 boardView.AdvancePalette(paletteCycleIndex);
+                GeneratePlannedPieces();
+                FillVisiblePieces();
+                SelectPiece(0);
+            }
+            else
+            {
+                ReplacePiece(pieceIndex);
+                pieceViews[pieceIndex].SetSelected(true);
             }
 
             return true;
@@ -368,6 +385,36 @@ namespace FarmMerger.Core
             resolvedOrigin = foundValidPlacement ? bestOrigin : hoveredCell;
             isValid = foundValidPlacement;
             return foundValidPlacement;
+        }
+
+        private void GeneratePlannedPieces()
+        {
+            if (fillPlanGenerator.TryGeneratePlan(boardConfig.Width, boardConfig.Height, out List<PieceDefinition> plan))
+            {
+                plannedPieces = new Queue<PieceDefinition>(plan);
+                return;
+            }
+
+            Debug.LogWarning("Failed to build guaranteed fill plan. Falling back to random pieces.");
+
+            List<PieceDefinition> fallbackPieces = new List<PieceDefinition>();
+            int targetCellCount = boardConfig.Width * boardConfig.Height;
+            int totalCells = 0;
+
+            while (totalCells < targetCellCount)
+            {
+                PieceDefinition piece = pieceLibrary.GetRandom();
+
+                if (totalCells + piece.Size > targetCellCount)
+                {
+                    continue;
+                }
+
+                fallbackPieces.Add(piece);
+                totalCells += piece.Size;
+            }
+
+            plannedPieces = new Queue<PieceDefinition>(fallbackPieces);
         }
     }
 }
