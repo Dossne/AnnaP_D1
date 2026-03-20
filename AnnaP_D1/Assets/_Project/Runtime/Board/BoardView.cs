@@ -12,6 +12,9 @@ namespace FarmMerger.Board
         private static readonly Color WoodBaseColor = new Color(0.57f, 0.37f, 0.20f, 1f);
         private static readonly Color WoodPlankLightColor = new Color(0.64f, 0.42f, 0.23f, 1f);
         private static readonly Color WoodPlankDarkColor = new Color(0.49f, 0.31f, 0.17f, 1f);
+        private static readonly Color WoodSeamColor = new Color(0.31f, 0.19f, 0.10f, 1f);
+        private static readonly Color WoodPixelHighlightColor = new Color(0.74f, 0.51f, 0.29f, 1f);
+        private static readonly Color WoodPixelShadowColor = new Color(0.40f, 0.25f, 0.14f, 1f);
         private static readonly Color ScratchColor = new Color(0.82f, 0.72f, 0.58f, 0.28f);
         private static readonly Color NailColor = new Color(0.23f, 0.19f, 0.16f, 1f);
         private static readonly Color ValidPreviewColor = new Color(0.34f, 0.78f, 0.40f, 0.65f);
@@ -239,7 +242,29 @@ namespace FarmMerger.Board
                     index % 2 == 0 ? WoodPlankLightColor : WoodPlankDarkColor,
                     -5,
                     0f);
+
+                if (index < 3)
+                {
+                    float seamY = y - (plankHeight * 0.5f);
+                    CreateDecorLayer(
+                        $"WoodSeam_{index}",
+                        new Vector3(0f, seamY, 0f),
+                        new Vector3(backdropWidth, 0.06f, 1f),
+                        WoodSeamColor,
+                        -4,
+                        0f);
+                }
             }
+
+            CreateDecorLayer("PixelBand_A", new Vector3(-0.9f, 1.55f, 0f), new Vector3(1.45f, 0.12f, 1f), WoodPixelHighlightColor, -4, 0f);
+            CreateDecorLayer("PixelBand_B", new Vector3(1.2f, 0.3f, 0f), new Vector3(1.05f, 0.12f, 1f), WoodPixelShadowColor, -4, 0f);
+            CreateDecorLayer("PixelBand_C", new Vector3(-1.1f, -0.9f, 0f), new Vector3(1.25f, 0.12f, 1f), WoodPixelHighlightColor, -4, 0f);
+            CreateDecorLayer("PixelBand_D", new Vector3(0.8f, -1.7f, 0f), new Vector3(1.6f, 0.12f, 1f), WoodPixelShadowColor, -4, 0f);
+
+            CreateDecorLayer("PixelKnot_A", new Vector3(-1.95f, 0.35f, 0f), new Vector3(0.22f, 0.22f, 1f), WoodPixelShadowColor, -4, 0f);
+            CreateDecorLayer("PixelKnot_B", new Vector3(-1.72f, 0.35f, 0f), new Vector3(0.12f, 0.12f, 1f), WoodPixelHighlightColor, -4, 0f);
+            CreateDecorLayer("PixelKnot_C", new Vector3(1.86f, -1.0f, 0f), new Vector3(0.20f, 0.20f, 1f), WoodPixelShadowColor, -4, 0f);
+            CreateDecorLayer("PixelKnot_D", new Vector3(2.08f, -1.0f, 0f), new Vector3(0.10f, 0.10f, 1f), WoodPixelHighlightColor, -4, 0f);
 
             CreateDecorLayer("Scratch_A", new Vector3(-1.4f, 0.95f, 0f), new Vector3(1.2f, 0.04f, 1f), ScratchColor, -4, -18f);
             CreateDecorLayer("Scratch_B", new Vector3(1.15f, -0.35f, 0f), new Vector3(0.95f, 0.04f, 1f), ScratchColor, -4, 16f);
