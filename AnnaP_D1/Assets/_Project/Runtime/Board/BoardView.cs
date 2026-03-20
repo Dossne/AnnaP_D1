@@ -201,7 +201,7 @@ namespace FarmMerger.Board
                 "Border",
                 config.TotalWidth + (BorderPadding * 2f),
                 config.TotalHeight + (BorderPadding * 2f),
-                Color.black,
+                Color.white,
                 -2);
 
             CreateLayer(

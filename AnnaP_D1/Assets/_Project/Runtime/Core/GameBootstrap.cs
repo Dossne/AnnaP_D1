@@ -203,12 +203,12 @@ namespace FarmMerger.Core
 
         private bool TryPlacePieceAtWorldPosition(int pieceIndex, Vector3 worldPosition)
         {
-            if (!boardView.TryGetCellPosition(worldPosition, out Vector2Int originCell))
+            PieceDefinition selectedPiece = currentPieces[pieceIndex];
+
+            if (!TryResolvePlacementOrigin(worldPosition, selectedPiece, out Vector2Int originCell, out _))
             {
                 return false;
             }
-
-            PieceDefinition selectedPiece = currentPieces[pieceIndex];
 
             if (!boardModel.TryPlacePiece(selectedPiece, originCell))
             {
@@ -234,14 +234,19 @@ namespace FarmMerger.Core
         {
             PieceDefinition draggedPiece = currentPieces[draggedPieceIndex];
 
-            if (!boardView.TryGetCellPosition(worldPosition, out Vector2Int originCell))
+            if (!boardView.TryGetCellPosition(worldPosition, out Vector2Int hoveredCell))
             {
                 boardView.HidePlacementPreview();
                 return;
             }
 
-            bool isValid = boardModel.CanPlacePiece(draggedPiece, originCell);
-            boardView.ShowPlacementPreview(draggedPiece, originCell, isValid);
+            if (TryResolvePlacementOrigin(worldPosition, draggedPiece, out Vector2Int resolvedCell, out bool resolvedIsValid))
+            {
+                boardView.ShowPlacementPreview(draggedPiece, resolvedCell, resolvedIsValid);
+                return;
+            }
+
+            boardView.ShowPlacementPreview(draggedPiece, hoveredCell, false);
         }
 
         private Vector3 GetPointerWorldPosition()
@@ -254,6 +259,59 @@ namespace FarmMerger.Core
             Vector3 pointerPosition = Input.mousePosition;
             pointerPosition.z = Mathf.Abs(targetCamera.transform.position.z);
             return targetCamera.ScreenToWorldPoint(pointerPosition);
+        }
+
+        private bool TryResolvePlacementOrigin(
+            Vector3 worldPosition,
+            PieceDefinition piece,
+            out Vector2Int resolvedOrigin,
+            out bool isValid)
+        {
+            if (!boardView.TryGetCellPosition(worldPosition, out Vector2Int hoveredCell))
+            {
+                resolvedOrigin = default;
+                isValid = false;
+                return false;
+            }
+
+            if (boardModel.CanPlacePiece(piece, hoveredCell))
+            {
+                resolvedOrigin = hoveredCell;
+                isValid = true;
+                return true;
+            }
+
+            const int searchRadius = 2;
+            float bestDistance = float.MaxValue;
+            bool foundValidPlacement = false;
+            Vector2Int bestOrigin = hoveredCell;
+
+            for (int offsetY = -searchRadius; offsetY <= searchRadius; offsetY++)
+            {
+                for (int offsetX = -searchRadius; offsetX <= searchRadius; offsetX++)
+                {
+                    Vector2Int candidateOrigin = new Vector2Int(hoveredCell.x + offsetX, hoveredCell.y + offsetY);
+
+                    if (!boardModel.CanPlacePiece(piece, candidateOrigin))
+                    {
+                        continue;
+                    }
+
+                    float distance = new Vector2(offsetX, offsetY).sqrMagnitude;
+                    if (distance >= bestDistance)
+                    {
+                        continue;
+                    }
+
+                    bestDistance = distance;
+                    bestOrigin = candidateOrigin;
+                    foundValidPlacement = true;
+                }
+            }
+
+            resolvedOrigin = foundValidPlacement ? bestOrigin : hoveredCell;
+            isValid = foundValidPlacement;
+            return foundValidPlacement;
         }
     }
 }

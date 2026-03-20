@@ -36,11 +36,11 @@ namespace FarmMerger.Board
         public static BoardConfig CreateDefault()
         {
             return new BoardConfig(
-                width: 10,
-                height: 10,
-                cellSize: 0.56f,
-                cellGap: 0.06f,
-                baseColor: new Color(0.97f, 0.85f, 0.38f, 1f),
+                width: 6,
+                height: 6,
+                cellSize: 0.86f,
+                cellGap: 0.08f,
+                baseColor: new Color(0.99f, 0.93f, 0.68f, 1f),
                 filledColor: new Color(0.35f, 0.56f, 0.33f, 1f),
                 palette: new[]
                 {
