@@ -10,6 +10,10 @@ namespace FarmMerger.Core
         private const int VisiblePieceCount = 3;
         private const float PieceRowSpacing = 2.3f;
         private const float BoardOffsetY = 1.1f;
+        private const float PieceRowOffsetY = -0.85f;
+        private const float PieceTrayWidth = 7.7f;
+        private const float PieceTrayHeight = 2.0f;
+        private const float PieceTrayThickness = 0.08f;
 
         private BoardConfig boardConfig;
         private BoardModel boardModel;
@@ -19,6 +23,7 @@ namespace FarmMerger.Core
         private PieceDefinition[] currentPieces;
         private Vector3[] pieceSlotPositions;
         private Camera targetCamera;
+        private Sprite sharedSprite;
         private int paletteCycleIndex;
         private int selectedPieceIndex;
         private bool isDraggingPiece;
@@ -82,8 +87,10 @@ namespace FarmMerger.Core
             currentPieces = new PieceDefinition[VisiblePieceCount];
             pieceSlotPositions = new Vector3[VisiblePieceCount];
 
-            float baseY = -((boardConfig.TotalHeight * 0.5f) + 1.2f);
+            float baseY = -((boardConfig.TotalHeight * 0.5f) + PieceRowOffsetY);
             float centerOffset = (VisiblePieceCount - 1) * 0.5f;
+
+            CreatePieceTrayFrame(baseY);
 
             for (int index = 0; index < VisiblePieceCount; index++)
             {
@@ -261,6 +268,44 @@ namespace FarmMerger.Core
             Vector3 pointerPosition = Input.mousePosition;
             pointerPosition.z = Mathf.Abs(targetCamera.transform.position.z);
             return targetCamera.ScreenToWorldPoint(pointerPosition);
+        }
+
+        private void CreatePieceTrayFrame(float centerY)
+        {
+            CreateFrameSegment("PieceTrayTop", new Vector3(0f, centerY + (PieceTrayHeight * 0.5f), 0f), new Vector3(PieceTrayWidth, PieceTrayThickness, 1f));
+            CreateFrameSegment("PieceTrayBottom", new Vector3(0f, centerY - (PieceTrayHeight * 0.5f), 0f), new Vector3(PieceTrayWidth, PieceTrayThickness, 1f));
+            CreateFrameSegment("PieceTrayLeft", new Vector3(-(PieceTrayWidth * 0.5f), centerY, 0f), new Vector3(PieceTrayThickness, PieceTrayHeight + PieceTrayThickness, 1f));
+            CreateFrameSegment("PieceTrayRight", new Vector3(PieceTrayWidth * 0.5f, centerY, 0f), new Vector3(PieceTrayThickness, PieceTrayHeight + PieceTrayThickness, 1f));
+        }
+
+        private void CreateFrameSegment(string objectName, Vector3 localPosition, Vector3 localScale)
+        {
+            GameObject frameObject = new GameObject(objectName);
+            frameObject.transform.SetParent(transform, false);
+            frameObject.transform.localPosition = localPosition;
+            frameObject.transform.localScale = localScale;
+
+            SpriteRenderer renderer = frameObject.AddComponent<SpriteRenderer>();
+            renderer.sprite = GetSharedSprite();
+            renderer.color = Color.white;
+            renderer.sortingOrder = 0;
+        }
+
+        private Sprite GetSharedSprite()
+        {
+            if (sharedSprite != null)
+            {
+                return sharedSprite;
+            }
+
+            Texture2D texture = new Texture2D(1, 1);
+            texture.SetPixel(0, 0, Color.white);
+            texture.Apply();
+            texture.filterMode = FilterMode.Point;
+            texture.wrapMode = TextureWrapMode.Clamp;
+
+            sharedSprite = Sprite.Create(texture, new Rect(0f, 0f, 1f, 1f), new Vector2(0.5f, 0.5f), 1f);
+            return sharedSprite;
         }
 
         private bool TryResolvePlacementOrigin(
