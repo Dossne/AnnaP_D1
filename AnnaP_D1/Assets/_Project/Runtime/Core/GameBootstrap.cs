@@ -54,7 +54,7 @@ namespace FarmMerger.Core
         {
             GameObject pieceObject = new GameObject("CurrentPiece");
             pieceObject.transform.SetParent(transform, false);
-            pieceObject.transform.localPosition = new Vector3(boardConfig.TotalWidth * 0.65f, 0f, 0f);
+            pieceObject.transform.localPosition = new Vector3(0f, -((boardConfig.TotalHeight * 0.5f) + 1.2f), 0f);
 
             pieceView = pieceObject.AddComponent<PieceView>();
             pieceView.Initialize(PieceColor);
@@ -72,7 +72,7 @@ namespace FarmMerger.Core
             targetCamera.orthographic = true;
             targetCamera.transform.position = new Vector3(0f, 0f, -10f);
             targetCamera.backgroundColor = new Color(0.93f, 0.96f, 0.98f, 1f);
-            targetCamera.orthographicSize = Mathf.Max(boardConfig.TotalHeight * 0.6f, boardConfig.TotalWidth * 0.72f) + 0.8f;
+            targetCamera.orthographicSize = Mathf.Max(boardConfig.TotalHeight * 0.76f, boardConfig.TotalWidth * 0.55f) + 0.8f;
         }
 
         private void RollNextPiece()
