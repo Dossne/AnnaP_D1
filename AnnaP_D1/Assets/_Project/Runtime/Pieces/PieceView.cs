@@ -7,6 +7,7 @@ namespace FarmMerger.Pieces
         private const float CellSize = 0.46f;
         private const float CellGap = 0.05f;
         private const float HitPadding = 0.22f;
+        private const float BottomLineY = -0.42f;
         private const float ShadowOffsetY = -0.08f;
         private const float ShadowSquash = 0.82f;
         private const float BounceSpeed = 14f;
@@ -45,7 +46,7 @@ namespace FarmMerger.Pieces
             float totalHeight = (piece.Height * CellSize) + ((piece.Height - 1) * CellGap);
             boundsSize = new Vector2(totalWidth, totalHeight);
             float startX = -((totalWidth - CellSize) * 0.5f);
-            float startY = -0.35f;
+            float startY = BottomLineY;
 
             for (int index = 0; index < blockRenderers.Length; index++)
             {

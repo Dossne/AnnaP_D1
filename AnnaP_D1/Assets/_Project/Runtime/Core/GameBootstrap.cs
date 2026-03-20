@@ -96,7 +96,8 @@ namespace FarmMerger.Core
             pieceSlotPositions = new Vector3[VisiblePieceCount];
 
             float baseY = BoardOffsetY - ((boardConfig.TotalHeight * 0.5f) + PieceTrayDistanceBelowBoard + (PieceTrayHeight * 0.5f));
-            float centerOffset = (VisiblePieceCount - 1) * 0.5f;
+            float slotWidth = PieceTrayWidth / VisiblePieceCount;
+            float leftEdge = -(PieceTrayWidth * 0.5f);
 
             CreatePieceTrayFrame(baseY);
 
@@ -104,7 +105,8 @@ namespace FarmMerger.Core
             {
                 GameObject pieceObject = new GameObject($"CurrentPiece_{index}");
                 pieceObject.transform.SetParent(transform, false);
-                pieceSlotPositions[index] = new Vector3((index - centerOffset) * PieceRowSpacing, baseY, 0f);
+                float slotCenterX = leftEdge + (slotWidth * (index + 0.5f));
+                pieceSlotPositions[index] = new Vector3(slotCenterX, baseY, 0f);
                 pieceObject.transform.localPosition = pieceSlotPositions[index];
 
                 PieceView pieceView = pieceObject.AddComponent<PieceView>();
