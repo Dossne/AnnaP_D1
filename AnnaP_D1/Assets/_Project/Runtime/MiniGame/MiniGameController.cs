@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace FarmMerger.MiniGame
 {
@@ -10,11 +9,14 @@ namespace FarmMerger.MiniGame
         private const float HoleSize = 142f;
         private const float HoleSpacing = 34f;
         private const float PlayfieldOffsetY = 46f;
+        private const float BlackCatVisibleDuration = 2f;
 
         private readonly MiniGameHoleView[,] holes = new MiniGameHoleView[GridSize, GridSize];
 
         private RectTransform rootRect;
         private bool isInitialized;
+        private float blackCatTimer;
+        private MiniGameHoleView activeBlackCatHole;
 
         public void Initialize(RectTransform parentRect)
         {
@@ -30,7 +32,25 @@ namespace FarmMerger.MiniGame
             rootRect.sizeDelta = new Vector2(PlayfieldSize, PlayfieldSize);
 
             BuildHoleGrid();
+            SpawnBlackCatInRandomHole();
             isInitialized = true;
+        }
+
+        private void Update()
+        {
+            if (!isInitialized || activeBlackCatHole == null)
+            {
+                return;
+            }
+
+            blackCatTimer -= Time.deltaTime;
+            if (blackCatTimer > 0f)
+            {
+                return;
+            }
+
+            activeBlackCatHole.HideBlackCat();
+            SpawnBlackCatInRandomHole();
         }
 
         private void BuildHoleGrid()
@@ -56,6 +76,41 @@ namespace FarmMerger.MiniGame
                     holes[column, row] = holeView;
                 }
             }
+        }
+
+        private void SpawnBlackCatInRandomHole()
+        {
+            MiniGameHoleView nextHole = FindRandomFreeHole();
+            if (nextHole == null)
+            {
+                return;
+            }
+
+            activeBlackCatHole = nextHole;
+            activeBlackCatHole.ShowBlackCat();
+            blackCatTimer = BlackCatVisibleDuration;
+        }
+
+        private MiniGameHoleView FindRandomFreeHole()
+        {
+            int startIndex = Random.Range(0, GridSize * GridSize);
+
+            for (int offset = 0; offset < GridSize * GridSize; offset++)
+            {
+                int flatIndex = (startIndex + offset) % (GridSize * GridSize);
+                int column = flatIndex % GridSize;
+                int row = flatIndex / GridSize;
+
+                MiniGameHoleView hole = holes[column, row];
+                if (hole.IsOccupied)
+                {
+                    continue;
+                }
+
+                return hole;
+            }
+
+            return null;
         }
 
         private static RectTransform CreateRect(string objectName, Transform parent)

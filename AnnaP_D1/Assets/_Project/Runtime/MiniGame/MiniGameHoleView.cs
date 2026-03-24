@@ -7,11 +7,13 @@ namespace FarmMerger.MiniGame
     {
         private static readonly Color RimColor = new Color(0.31f, 0.14f, 0.42f, 1f);
         private static readonly Color InnerShadowColor = new Color(0f, 0f, 0f, 0.94f);
+        private static readonly Color FrontCoverColor = new Color(0f, 0f, 0f, 0.98f);
 
         private static Sprite circleSprite;
         private static Sprite radialShadowSprite;
 
         private bool isOccupied;
+        private MiniGameCatView blackCatView;
 
         public bool IsOccupied => isOccupied;
 
@@ -37,11 +39,37 @@ namespace FarmMerger.MiniGame
                 new Vector2(size * 0.72f, size * 0.72f),
                 radialShadowSprite,
                 InnerShadowColor);
+
+            GameObject catObject = new GameObject("BlackCat", typeof(RectTransform));
+            catObject.transform.SetParent(transform, false);
+            blackCatView = catObject.AddComponent<MiniGameCatView>();
+            blackCatView.Initialize(MiniGameCatView.CatStyle.Black, size * 0.86f);
+            blackCatView.HideImmediate();
+
+            CreateImage(
+                "HoleFrontCover",
+                transform,
+                new Vector2(0f, -(size * 0.18f)),
+                new Vector2(size * 0.76f, size * 0.42f),
+                circleSprite,
+                FrontCoverColor);
         }
 
         public void SetOccupied(bool occupied)
         {
             isOccupied = occupied;
+        }
+
+        public void ShowBlackCat()
+        {
+            isOccupied = true;
+            blackCatView.Show();
+        }
+
+        public void HideBlackCat()
+        {
+            isOccupied = false;
+            blackCatView.Hide();
         }
 
         private static void EnsureSprites()
