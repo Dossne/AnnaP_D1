@@ -211,21 +211,35 @@ namespace FarmMerger.Core
             overlayRect.offsetMax = Vector2.zero;
 
             Image overlayImage = overlay.AddComponent<Image>();
-            overlayImage.color = HudOverlayColor;
+            overlayImage.color = new Color(0.58f, 0.40f, 0.24f, 1f);
 
             GameObject panel = CreateUiObject("WindowPanel", overlay.transform);
             RectTransform panelRect = panel.GetComponent<RectTransform>();
             panelRect.anchorMin = new Vector2(0.5f, 0.5f);
             panelRect.anchorMax = new Vector2(0.5f, 0.5f);
-            panelRect.anchoredPosition = new Vector2(0f, -10f);
-            panelRect.sizeDelta = new Vector2(560f, 760f);
+            panelRect.anchoredPosition = Vector2.zero;
+            panelRect.sizeDelta = new Vector2(620f, 1120f);
 
             Image panelImage = panel.AddComponent<Image>();
-            panelImage.color = HudPanelColor;
+            panelImage.color = new Color(0.60f, 0.41f, 0.24f, 1f);
 
             Outline panelOutline = panel.AddComponent<Outline>();
             panelOutline.effectColor = HudAccentColor;
-            panelOutline.effectDistance = new Vector2(5f, -5f);
+            panelOutline.effectDistance = new Vector2(6f, -6f);
+
+            GameObject playfield = CreateUiObject("MiniGamePlayfield", panel.transform);
+            RectTransform playfieldRect = playfield.GetComponent<RectTransform>();
+            playfieldRect.anchorMin = new Vector2(0.5f, 0.5f);
+            playfieldRect.anchorMax = new Vector2(0.5f, 0.5f);
+            playfieldRect.anchoredPosition = new Vector2(0f, 30f);
+            playfieldRect.sizeDelta = new Vector2(470f, 470f);
+
+            Image playfieldImage = playfield.AddComponent<Image>();
+            playfieldImage.color = HudPanelColor;
+
+            Outline playfieldOutline = playfield.AddComponent<Outline>();
+            playfieldOutline.effectColor = HudAccentColor;
+            playfieldOutline.effectDistance = new Vector2(5f, -5f);
 
             CreateText(
                 "WindowTitle",
@@ -235,21 +249,21 @@ namespace FarmMerger.Core
                 TextAnchor.MiddleCenter,
                 new Vector2(0.5f, 1f),
                 new Vector2(0.5f, 1f),
-                new Vector2(0f, -78f),
-                new Vector2(300f, 56f),
-                HudTextColor);
+                new Vector2(0f, -96f),
+                new Vector2(320f, 56f),
+                Color.white);
 
             CreateText(
                 "WindowBody",
                 panel.transform,
-                "This is a new window for the next mini-game.\nWe can build its gameplay here in the next step.",
+                "A full-screen screen for the next mini-game.\nWe can build its own rules and controls here next.",
                 28,
                 TextAnchor.MiddleCenter,
-                new Vector2(0.5f, 0.5f),
-                new Vector2(0.5f, 0.5f),
-                new Vector2(0f, 20f),
-                new Vector2(420f, 180f),
-                HudTextColor);
+                new Vector2(0.5f, 0f),
+                new Vector2(0.5f, 0f),
+                new Vector2(0f, 200f),
+                new Vector2(470f, 120f),
+                Color.white);
 
             Button closeButton = CreateButton(
                 "CloseButton",
@@ -257,8 +271,8 @@ namespace FarmMerger.Core
                 "Close",
                 new Vector2(0.5f, 0f),
                 new Vector2(0.5f, 0f),
-                new Vector2(0f, 76f),
-                new Vector2(220f, 82f),
+                new Vector2(0f, 88f),
+                new Vector2(240f, 84f),
                 HudAccentColor,
                 Color.white,
                 30);
