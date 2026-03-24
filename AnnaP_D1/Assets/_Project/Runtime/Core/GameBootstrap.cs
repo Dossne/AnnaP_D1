@@ -187,7 +187,7 @@ namespace FarmMerger.Core
             miniGameBannerButton = CreateButton(
                 "MiniGameBanner",
                 canvasObject.transform,
-                "Mini Game",
+                "mini game",
                 new Vector2(0.5f, 1f),
                 new Vector2(0.5f, 1f),
                 new Vector2(0f, -118f),
