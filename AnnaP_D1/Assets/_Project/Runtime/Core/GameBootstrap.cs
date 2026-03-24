@@ -211,7 +211,7 @@ namespace FarmMerger.Core
             overlayRect.offsetMax = Vector2.zero;
 
             Image overlayImage = overlay.AddComponent<Image>();
-            overlayImage.color = new Color(0.58f, 0.40f, 0.24f, 1f);
+            overlayImage.color = new Color(0.90f, 0.85f, 0.96f, 1f);
 
             GameObject panel = CreateUiObject("WindowPanel", overlay.transform);
             RectTransform panelRect = panel.GetComponent<RectTransform>();
@@ -221,7 +221,7 @@ namespace FarmMerger.Core
             panelRect.sizeDelta = new Vector2(620f, 1120f);
 
             Image panelImage = panel.AddComponent<Image>();
-            panelImage.color = new Color(0.60f, 0.41f, 0.24f, 1f);
+            panelImage.color = new Color(0.90f, 0.85f, 0.96f, 1f);
 
             Button closeButton = CreateButton(
                 "CloseButton",
