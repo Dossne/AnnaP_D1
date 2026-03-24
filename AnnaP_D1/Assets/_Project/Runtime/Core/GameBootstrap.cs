@@ -197,19 +197,6 @@ namespace FarmMerger.Core
                 34);
             miniGameBannerButton.onClick.AddListener(OpenMiniGameWindow);
 
-            GameObject bannerSubtitle = CreateText(
-                "BannerSubtitle",
-                miniGameBannerButton.transform,
-                "Tap to open a new mini-game window",
-                22,
-                TextAnchor.MiddleCenter,
-                new Vector2(0.5f, 0f),
-                new Vector2(0.5f, 0f),
-                new Vector2(0f, 18f),
-                new Vector2(340f, 26f),
-                new Color(HudTextColor.r, HudTextColor.g, HudTextColor.b, 0.82f));
-            bannerSubtitle.GetComponent<RectTransform>().SetAsLastSibling();
-
             miniGameWindow = CreateWindow(canvasObject.transform);
             miniGameWindow.SetActive(false);
         }
