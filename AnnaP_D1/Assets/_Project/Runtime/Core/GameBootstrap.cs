@@ -223,48 +223,6 @@ namespace FarmMerger.Core
             Image panelImage = panel.AddComponent<Image>();
             panelImage.color = new Color(0.60f, 0.41f, 0.24f, 1f);
 
-            Outline panelOutline = panel.AddComponent<Outline>();
-            panelOutline.effectColor = HudAccentColor;
-            panelOutline.effectDistance = new Vector2(6f, -6f);
-
-            GameObject playfield = CreateUiObject("MiniGamePlayfield", panel.transform);
-            RectTransform playfieldRect = playfield.GetComponent<RectTransform>();
-            playfieldRect.anchorMin = new Vector2(0.5f, 0.5f);
-            playfieldRect.anchorMax = new Vector2(0.5f, 0.5f);
-            playfieldRect.anchoredPosition = new Vector2(0f, 30f);
-            playfieldRect.sizeDelta = new Vector2(470f, 470f);
-
-            Image playfieldImage = playfield.AddComponent<Image>();
-            playfieldImage.color = HudPanelColor;
-
-            Outline playfieldOutline = playfield.AddComponent<Outline>();
-            playfieldOutline.effectColor = HudAccentColor;
-            playfieldOutline.effectDistance = new Vector2(5f, -5f);
-
-            CreateText(
-                "WindowTitle",
-                panel.transform,
-                "Mini Game",
-                42,
-                TextAnchor.MiddleCenter,
-                new Vector2(0.5f, 1f),
-                new Vector2(0.5f, 1f),
-                new Vector2(0f, -96f),
-                new Vector2(320f, 56f),
-                Color.white);
-
-            CreateText(
-                "WindowBody",
-                panel.transform,
-                "A full-screen screen for the next mini-game.\nWe can build its own rules and controls here next.",
-                28,
-                TextAnchor.MiddleCenter,
-                new Vector2(0.5f, 0f),
-                new Vector2(0.5f, 0f),
-                new Vector2(0f, 200f),
-                new Vector2(470f, 120f),
-                Color.white);
-
             Button closeButton = CreateButton(
                 "CloseButton",
                 panel.transform,
