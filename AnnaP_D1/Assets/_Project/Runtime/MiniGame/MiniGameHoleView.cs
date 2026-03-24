@@ -8,9 +8,10 @@ namespace FarmMerger.MiniGame
         private static readonly Color RimShadowColor = new Color(0.18f, 0.08f, 0.25f, 0.92f);
         private static readonly Color RimBaseColor = new Color(0.31f, 0.14f, 0.42f, 1f);
         private static readonly Color RimHighlightColor = new Color(0.55f, 0.35f, 0.68f, 0.95f);
-        private static readonly Color RimInnerColor = new Color(0.24f, 0.11f, 0.34f, 1f);
-        private static readonly Color InnerShadowColor = new Color(0f, 0f, 0f, 0.98f);
-        private static readonly Color InnerSoftShadowColor = new Color(0.06f, 0.02f, 0.08f, 0.88f);
+        private static readonly Color RimInnerColor = new Color(0.74f, 0.62f, 0.84f, 0.96f);
+        private static readonly Color InnerShadowColor = new Color(0.16f, 0.08f, 0.22f, 0.96f);
+        private static readonly Color InnerSoftShadowColor = new Color(0.58f, 0.43f, 0.70f, 0.82f);
+        private static readonly Color InnerGlowColor = new Color(0.87f, 0.78f, 0.93f, 0.72f);
         private static readonly Color FrontCoverColor = new Color(0.03f, 0.01f, 0.05f, 0.98f);
 
         private static Sprite circleSprite;
@@ -64,15 +65,23 @@ namespace FarmMerger.MiniGame
                 "HoleInnerSoft",
                 transform,
                 new Vector2(0f, -(size * 0.02f)),
-                new Vector2(size * 0.70f, size * 0.60f),
+                new Vector2(size * 0.72f, size * 0.61f),
                 radialShadowSprite,
                 InnerSoftShadowColor);
+
+            CreateImage(
+                "HoleInnerGlow",
+                transform,
+                new Vector2(0f, -(size * 0.01f)),
+                new Vector2(size * 0.64f, size * 0.52f),
+                radialShadowSprite,
+                InnerGlowColor);
 
             CreateImage(
                 "HoleInnerCore",
                 transform,
                 new Vector2(0f, -(size * 0.05f)),
-                new Vector2(size * 0.60f, size * 0.50f),
+                new Vector2(size * 0.53f, size * 0.44f),
                 radialShadowSprite,
                 InnerShadowColor);
 
@@ -174,7 +183,7 @@ namespace FarmMerger.MiniGame
                     }
 
                     float falloff = 1f - Mathf.Clamp01(normalizedDistance);
-                    float alpha = Mathf.SmoothStep(0.18f, 1f, falloff * falloff);
+                    float alpha = Mathf.SmoothStep(0.06f, 1f, falloff * falloff * 0.92f);
                     texture.SetPixel(x, y, new Color(1f, 1f, 1f, alpha));
                 }
             }
