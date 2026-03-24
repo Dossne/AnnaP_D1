@@ -5,10 +5,10 @@ namespace FarmMerger.MiniGame
     public sealed class MiniGameController : MonoBehaviour
     {
         private const int GridSize = 3;
-        private const float PlayfieldSize = 560f;
-        private const float HoleSize = 142f;
-        private const float HoleSpacing = 34f;
-        private const float PlayfieldOffsetY = 46f;
+        private const float PlayfieldSize = 640f;
+        private const float HoleSize = 158f;
+        private const float HoleSpacing = 52f;
+        private const float PlayfieldOffsetY = 58f;
         private const float BlackCatVisibleDuration = 2f;
 
         private readonly MiniGameHoleView[,] holes = new MiniGameHoleView[GridSize, GridSize];
