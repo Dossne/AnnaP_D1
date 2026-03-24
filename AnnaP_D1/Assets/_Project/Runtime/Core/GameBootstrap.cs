@@ -35,6 +35,7 @@ namespace FarmMerger.Core
         private Vector3[] pieceSlotPositions;
         private Camera targetCamera;
         private Sprite sharedSprite;
+        private Font sharedUiFont;
         private Queue<PieceDefinition> plannedPieces = new Queue<PieceDefinition>();
         private Canvas hudCanvas;
         private GameObject miniGameWindow;
@@ -350,12 +351,13 @@ namespace FarmMerger.Core
 
             Text text = textObject.AddComponent<Text>();
             text.text = textValue;
-            text.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+            text.font = GetSharedUiFont();
             text.fontSize = fontSize;
             text.alignment = alignment;
             text.color = color;
             text.horizontalOverflow = HorizontalWrapMode.Wrap;
             text.verticalOverflow = VerticalWrapMode.Overflow;
+            text.raycastTarget = false;
 
             return textObject;
         }
@@ -365,6 +367,17 @@ namespace FarmMerger.Core
             GameObject uiObject = new GameObject(objectName, typeof(RectTransform));
             uiObject.transform.SetParent(parent, false);
             return uiObject;
+        }
+
+        private Font GetSharedUiFont()
+        {
+            if (sharedUiFont != null)
+            {
+                return sharedUiFont;
+            }
+
+            sharedUiFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            return sharedUiFont;
         }
 
         private void EnsureEventSystem()
@@ -403,7 +416,17 @@ namespace FarmMerger.Core
 
         private bool IsPointerOverUi()
         {
-            return EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
+            if (EventSystem.current == null)
+            {
+                return false;
+            }
+
+            if (Input.touchCount > 0)
+            {
+                return EventSystem.current.IsPointerOverGameObject(Input.GetTouch(0).fingerId);
+            }
+
+            return EventSystem.current.IsPointerOverGameObject();
         }
 
         private void FillVisiblePieces()
