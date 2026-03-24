@@ -4,14 +4,15 @@ namespace FarmMerger.MiniGame
 {
     public sealed class MiniGameController : MonoBehaviour
     {
-        private const int GridSize = 3;
+        private const int ColumnCount = 3;
+        private const int RowCount = 4;
         private const float PlayfieldSize = 640f;
         private const float HoleSize = 158f;
         private const float HoleSpacing = 52f;
-        private const float PlayfieldOffsetY = 58f;
+        private const float PlayfieldOffsetY = 96f;
         private const float BlackCatVisibleDuration = 2f;
 
-        private readonly MiniGameHoleView[,] holes = new MiniGameHoleView[GridSize, GridSize];
+        private readonly MiniGameHoleView[,] holes = new MiniGameHoleView[ColumnCount, RowCount];
 
         private RectTransform rootRect;
         private bool isInitialized;
@@ -55,13 +56,14 @@ namespace FarmMerger.MiniGame
 
         private void BuildHoleGrid()
         {
-            float totalWidth = (GridSize * HoleSize) + ((GridSize - 1) * HoleSpacing);
+            float totalWidth = (ColumnCount * HoleSize) + ((ColumnCount - 1) * HoleSpacing);
+            float totalHeight = (RowCount * HoleSize) + ((RowCount - 1) * HoleSpacing);
             float startX = -(totalWidth * 0.5f) + (HoleSize * 0.5f);
-            float startY = (totalWidth * 0.5f) - (HoleSize * 0.5f);
+            float startY = (totalHeight * 0.5f) - (HoleSize * 0.5f);
 
-            for (int row = 0; row < GridSize; row++)
+            for (int row = 0; row < RowCount; row++)
             {
-                for (int column = 0; column < GridSize; column++)
+                for (int column = 0; column < ColumnCount; column++)
                 {
                     RectTransform holeRect = CreateRect($"Hole_{column}_{row}", rootRect);
                     holeRect.anchorMin = new Vector2(0.5f, 0.5f);
@@ -93,13 +95,14 @@ namespace FarmMerger.MiniGame
 
         private MiniGameHoleView FindRandomFreeHole()
         {
-            int startIndex = Random.Range(0, GridSize * GridSize);
+            int totalHoleCount = ColumnCount * RowCount;
+            int startIndex = Random.Range(0, totalHoleCount);
 
-            for (int offset = 0; offset < GridSize * GridSize; offset++)
+            for (int offset = 0; offset < totalHoleCount; offset++)
             {
-                int flatIndex = (startIndex + offset) % (GridSize * GridSize);
-                int column = flatIndex % GridSize;
-                int row = flatIndex / GridSize;
+                int flatIndex = (startIndex + offset) % totalHoleCount;
+                int column = flatIndex % ColumnCount;
+                int row = flatIndex / ColumnCount;
 
                 MiniGameHoleView hole = holes[column, row];
                 if (hole.IsOccupied)
