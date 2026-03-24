@@ -26,6 +26,8 @@ namespace FarmMerger.MiniGame
                 return;
             }
 
+            ResetHoleReferences();
+
             rootRect = CreateRect("MiniGamePlayfield", parentRect);
             rootRect.anchorMin = new Vector2(0.5f, 0.5f);
             rootRect.anchorMax = new Vector2(0.5f, 0.5f);
@@ -33,8 +35,8 @@ namespace FarmMerger.MiniGame
             rootRect.sizeDelta = new Vector2(PlayfieldSize, PlayfieldSize);
 
             BuildHoleGrid();
-            SpawnBlackCatInRandomHole();
             isInitialized = true;
+            SpawnBlackCatInRandomHole();
         }
 
         private void Update()
@@ -85,6 +87,7 @@ namespace FarmMerger.MiniGame
             MiniGameHoleView nextHole = FindRandomFreeHole();
             if (nextHole == null)
             {
+                activeBlackCatHole = null;
                 return;
             }
 
@@ -105,6 +108,11 @@ namespace FarmMerger.MiniGame
                 int row = flatIndex / ColumnCount;
 
                 MiniGameHoleView hole = holes[column, row];
+                if (hole == null)
+                {
+                    continue;
+                }
+
                 if (hole.IsOccupied)
                 {
                     continue;
@@ -114,6 +122,20 @@ namespace FarmMerger.MiniGame
             }
 
             return null;
+        }
+
+        private void ResetHoleReferences()
+        {
+            activeBlackCatHole = null;
+            blackCatTimer = 0f;
+
+            for (int row = 0; row < RowCount; row++)
+            {
+                for (int column = 0; column < ColumnCount; column++)
+                {
+                    holes[column, row] = null;
+                }
+            }
         }
 
         private static RectTransform CreateRect(string objectName, Transform parent)
