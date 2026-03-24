@@ -5,9 +5,13 @@ namespace FarmMerger.MiniGame
 {
     public sealed class MiniGameHoleView : MonoBehaviour
     {
-        private static readonly Color RimColor = new Color(0.31f, 0.14f, 0.42f, 1f);
-        private static readonly Color InnerShadowColor = new Color(0f, 0f, 0f, 0.94f);
-        private static readonly Color FrontCoverColor = new Color(0f, 0f, 0f, 0.98f);
+        private static readonly Color RimShadowColor = new Color(0.18f, 0.08f, 0.25f, 0.92f);
+        private static readonly Color RimBaseColor = new Color(0.31f, 0.14f, 0.42f, 1f);
+        private static readonly Color RimHighlightColor = new Color(0.55f, 0.35f, 0.68f, 0.95f);
+        private static readonly Color RimInnerColor = new Color(0.24f, 0.11f, 0.34f, 1f);
+        private static readonly Color InnerShadowColor = new Color(0f, 0f, 0f, 0.98f);
+        private static readonly Color InnerSoftShadowColor = new Color(0.06f, 0.02f, 0.08f, 0.88f);
+        private static readonly Color FrontCoverColor = new Color(0.03f, 0.01f, 0.05f, 0.98f);
 
         private static Sprite circleSprite;
         private static Sprite radialShadowSprite;
@@ -25,18 +29,50 @@ namespace FarmMerger.MiniGame
             EnsureSprites();
 
             CreateImage(
-                "HoleRim",
+                "HoleDropShadow",
+                transform,
+                new Vector2(0f, -(size * 0.05f)),
+                new Vector2(size * 1.03f, size * 0.95f),
+                circleSprite,
+                RimShadowColor);
+
+            CreateImage(
+                "HoleRimBase",
                 transform,
                 Vector2.zero,
                 new Vector2(size, size),
                 circleSprite,
-                RimColor);
+                RimBaseColor);
 
             CreateImage(
-                "HoleInner",
+                "HoleRimHighlight",
                 transform,
-                Vector2.zero,
-                new Vector2(size * 0.72f, size * 0.72f),
+                new Vector2(0f, size * 0.03f),
+                new Vector2(size * 0.88f, size * 0.74f),
+                circleSprite,
+                RimHighlightColor);
+
+            CreateImage(
+                "HoleRimInner",
+                transform,
+                new Vector2(0f, -(size * 0.03f)),
+                new Vector2(size * 0.84f, size * 0.72f),
+                circleSprite,
+                RimInnerColor);
+
+            CreateImage(
+                "HoleInnerSoft",
+                transform,
+                new Vector2(0f, -(size * 0.02f)),
+                new Vector2(size * 0.70f, size * 0.60f),
+                radialShadowSprite,
+                InnerSoftShadowColor);
+
+            CreateImage(
+                "HoleInnerCore",
+                transform,
+                new Vector2(0f, -(size * 0.05f)),
+                new Vector2(size * 0.60f, size * 0.50f),
                 radialShadowSprite,
                 InnerShadowColor);
 
@@ -49,8 +85,8 @@ namespace FarmMerger.MiniGame
             CreateImage(
                 "HoleFrontCover",
                 transform,
-                new Vector2(0f, -(size * 0.18f)),
-                new Vector2(size * 0.76f, size * 0.42f),
+                new Vector2(0f, -(size * 0.19f)),
+                new Vector2(size * 0.78f, size * 0.40f),
                 circleSprite,
                 FrontCoverColor);
         }
@@ -137,7 +173,8 @@ namespace FarmMerger.MiniGame
                         continue;
                     }
 
-                    float alpha = Mathf.Lerp(0.42f, 1f, 1f - Mathf.Clamp01(normalizedDistance));
+                    float falloff = 1f - Mathf.Clamp01(normalizedDistance);
+                    float alpha = Mathf.SmoothStep(0.18f, 1f, falloff * falloff);
                     texture.SetPixel(x, y, new Color(1f, 1f, 1f, alpha));
                 }
             }
