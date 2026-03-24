@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using FarmMerger.Board;
+using FarmMerger.MiniGame;
 using FarmMerger.Pieces;
 using UnityEngine.EventSystems;
 using UnityEngine;
@@ -39,6 +40,7 @@ namespace FarmMerger.Core
         private Queue<PieceDefinition> plannedPieces = new Queue<PieceDefinition>();
         private Canvas hudCanvas;
         private GameObject miniGameWindow;
+        private MiniGameController miniGameController;
         private Button miniGameBannerButton;
         private int paletteCycleIndex;
         private int selectedPieceIndex;
@@ -222,6 +224,9 @@ namespace FarmMerger.Core
 
             Image panelImage = panel.AddComponent<Image>();
             panelImage.color = new Color(0.90f, 0.85f, 0.96f, 1f);
+
+            miniGameController = panel.AddComponent<MiniGameController>();
+            miniGameController.Initialize(panelRect);
 
             Button closeButton = CreateButton(
                 "CloseButton",
