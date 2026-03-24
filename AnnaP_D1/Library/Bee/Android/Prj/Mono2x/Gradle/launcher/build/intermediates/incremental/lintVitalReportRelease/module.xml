@@ -1,0 +1,18 @@
+<lint-module
+    format="1"
+    dir="/Users/anna/AnnaP_D1/AnnaP_D1/Library/Bee/Android/Prj/Mono2x/Gradle/launcher"
+    name=":launcher"
+    type="APP"
+    maven="Gradle:launcher:"
+    gradle="7.4.2"
+    buildFolder="build"
+    bootClassPath="/Applications/Unity/Hub/Editor/2022.3.62f2/PlaybackEngines/AndroidPlayer/SDK/platforms/android-36/android.jar:/Applications/Unity/Hub/Editor/2022.3.62f2/PlaybackEngines/AndroidPlayer/SDK/build-tools/34.0.0/core-lambda-stubs.jar"
+    javaSourceLevel="11"
+    compileTarget="android-36"
+    neverShrinking="true">
+  <lintOptions
+      absolutePaths="true"
+      checkReleaseBuilds="true"
+      explainIssues="true"/>
+  <variant name="release"/>
+</lint-module>

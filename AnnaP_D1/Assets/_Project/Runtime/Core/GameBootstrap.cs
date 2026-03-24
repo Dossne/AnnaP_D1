@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 using FarmMerger.Board;
 using FarmMerger.Pieces;
+using UnityEngine.EventSystems;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace FarmMerger.Core
 {
@@ -9,6 +11,11 @@ namespace FarmMerger.Core
     {
         private static readonly Color PieceColor = new Color(0.98f, 0.91f, 0.63f, 1f);
         private static readonly Color FrameColor = new Color(0.79f, 0.63f, 0.17f, 1f);
+        private static readonly Color HudBannerColor = new Color(0.98f, 0.87f, 0.53f, 0.96f);
+        private static readonly Color HudPanelColor = new Color(1f, 0.97f, 0.86f, 0.98f);
+        private static readonly Color HudOverlayColor = new Color(0.28f, 0.18f, 0.08f, 0.52f);
+        private static readonly Color HudAccentColor = new Color(0.79f, 0.63f, 0.17f, 1f);
+        private static readonly Color HudTextColor = new Color(0.36f, 0.23f, 0.08f, 1f);
         private const float TargetPortraitAspect = 720f / 1280f;
         private const int VisiblePieceCount = 3;
         private const float PieceRowSpacing = 1.95f;
@@ -29,9 +36,13 @@ namespace FarmMerger.Core
         private Camera targetCamera;
         private Sprite sharedSprite;
         private Queue<PieceDefinition> plannedPieces = new Queue<PieceDefinition>();
+        private Canvas hudCanvas;
+        private GameObject miniGameWindow;
+        private Button miniGameBannerButton;
         private int paletteCycleIndex;
         private int selectedPieceIndex;
         private bool isDraggingPiece;
+        private bool isMiniGameWindowOpen;
         private int draggedPieceIndex = -1;
 
         private void Awake()
@@ -44,6 +55,7 @@ namespace FarmMerger.Core
             CreateBoardView();
             CreatePieceView();
             ConfigureCamera();
+            CreateHud();
             GeneratePlannedPieces();
             FillVisiblePieces();
             SelectPiece(0);
@@ -56,8 +68,18 @@ namespace FarmMerger.Core
 
         private void HandleDebugInput()
         {
+            if (isMiniGameWindowOpen)
+            {
+                return;
+            }
+
             if (Input.GetMouseButtonDown(0))
             {
+                if (IsPointerOverUi())
+                {
+                    return;
+                }
+
                 TryBeginPieceDrag();
             }
 
@@ -135,6 +157,253 @@ namespace FarmMerger.Core
             float requiredHorizontalHalfSize = (Mathf.Max(boardConfig.TotalWidth, PieceTrayWidth) * 0.5f) + 0.35f;
 
             targetCamera.orthographicSize = Mathf.Max(requiredVerticalHalfSize, requiredHorizontalHalfSize / TargetPortraitAspect);
+        }
+
+        private void CreateHud()
+        {
+            EnsureEventSystem();
+
+            GameObject canvasObject = new GameObject("HudCanvas");
+            canvasObject.transform.SetParent(transform, false);
+
+            hudCanvas = canvasObject.AddComponent<Canvas>();
+            hudCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            hudCanvas.sortingOrder = 100;
+
+            canvasObject.AddComponent<CanvasScaler>().uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            CanvasScaler scaler = canvasObject.GetComponent<CanvasScaler>();
+            scaler.referenceResolution = new Vector2(720f, 1280f);
+            scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
+            scaler.matchWidthOrHeight = 1f;
+            canvasObject.AddComponent<GraphicRaycaster>();
+
+            RectTransform canvasRect = canvasObject.GetComponent<RectTransform>();
+            canvasRect.anchorMin = Vector2.zero;
+            canvasRect.anchorMax = Vector2.one;
+            canvasRect.offsetMin = Vector2.zero;
+            canvasRect.offsetMax = Vector2.zero;
+
+            miniGameBannerButton = CreateButton(
+                "MiniGameBanner",
+                canvasObject.transform,
+                "Mini Game",
+                new Vector2(0.5f, 1f),
+                new Vector2(0.5f, 1f),
+                new Vector2(0f, -118f),
+                new Vector2(420f, 108f),
+                HudBannerColor,
+                HudTextColor,
+                34);
+            miniGameBannerButton.onClick.AddListener(OpenMiniGameWindow);
+
+            GameObject bannerSubtitle = CreateText(
+                "BannerSubtitle",
+                miniGameBannerButton.transform,
+                "Tap to open a new mini-game window",
+                22,
+                TextAnchor.MiddleCenter,
+                new Vector2(0.5f, 0f),
+                new Vector2(0.5f, 0f),
+                new Vector2(0f, 18f),
+                new Vector2(340f, 26f),
+                new Color(HudTextColor.r, HudTextColor.g, HudTextColor.b, 0.82f));
+            bannerSubtitle.GetComponent<RectTransform>().SetAsLastSibling();
+
+            miniGameWindow = CreateWindow(canvasObject.transform);
+            miniGameWindow.SetActive(false);
+        }
+
+        private GameObject CreateWindow(Transform parent)
+        {
+            GameObject overlay = CreateUiObject("MiniGameWindow", parent);
+            RectTransform overlayRect = overlay.GetComponent<RectTransform>();
+            overlayRect.anchorMin = Vector2.zero;
+            overlayRect.anchorMax = Vector2.one;
+            overlayRect.offsetMin = Vector2.zero;
+            overlayRect.offsetMax = Vector2.zero;
+
+            Image overlayImage = overlay.AddComponent<Image>();
+            overlayImage.color = HudOverlayColor;
+
+            GameObject panel = CreateUiObject("WindowPanel", overlay.transform);
+            RectTransform panelRect = panel.GetComponent<RectTransform>();
+            panelRect.anchorMin = new Vector2(0.5f, 0.5f);
+            panelRect.anchorMax = new Vector2(0.5f, 0.5f);
+            panelRect.anchoredPosition = new Vector2(0f, -10f);
+            panelRect.sizeDelta = new Vector2(560f, 760f);
+
+            Image panelImage = panel.AddComponent<Image>();
+            panelImage.color = HudPanelColor;
+
+            Outline panelOutline = panel.AddComponent<Outline>();
+            panelOutline.effectColor = HudAccentColor;
+            panelOutline.effectDistance = new Vector2(5f, -5f);
+
+            CreateText(
+                "WindowTitle",
+                panel.transform,
+                "Mini Game",
+                42,
+                TextAnchor.MiddleCenter,
+                new Vector2(0.5f, 1f),
+                new Vector2(0.5f, 1f),
+                new Vector2(0f, -78f),
+                new Vector2(300f, 56f),
+                HudTextColor);
+
+            CreateText(
+                "WindowBody",
+                panel.transform,
+                "This is a new window for the next mini-game.\nWe can build its gameplay here in the next step.",
+                28,
+                TextAnchor.MiddleCenter,
+                new Vector2(0.5f, 0.5f),
+                new Vector2(0.5f, 0.5f),
+                new Vector2(0f, 20f),
+                new Vector2(420f, 180f),
+                HudTextColor);
+
+            Button closeButton = CreateButton(
+                "CloseButton",
+                panel.transform,
+                "Close",
+                new Vector2(0.5f, 0f),
+                new Vector2(0.5f, 0f),
+                new Vector2(0f, 76f),
+                new Vector2(220f, 82f),
+                HudAccentColor,
+                Color.white,
+                30);
+            closeButton.onClick.AddListener(CloseMiniGameWindow);
+
+            return overlay;
+        }
+
+        private Button CreateButton(
+            string objectName,
+            Transform parent,
+            string label,
+            Vector2 anchorMin,
+            Vector2 anchorMax,
+            Vector2 anchoredPosition,
+            Vector2 size,
+            Color backgroundColor,
+            Color textColor,
+            int fontSize)
+        {
+            GameObject buttonObject = CreateUiObject(objectName, parent);
+            RectTransform rectTransform = buttonObject.GetComponent<RectTransform>();
+            rectTransform.anchorMin = anchorMin;
+            rectTransform.anchorMax = anchorMax;
+            rectTransform.anchoredPosition = anchoredPosition;
+            rectTransform.sizeDelta = size;
+
+            Image image = buttonObject.AddComponent<Image>();
+            image.color = backgroundColor;
+
+            Button button = buttonObject.AddComponent<Button>();
+            ColorBlock colors = button.colors;
+            colors.normalColor = backgroundColor;
+            colors.highlightedColor = Color.Lerp(backgroundColor, Color.white, 0.08f);
+            colors.pressedColor = Color.Lerp(backgroundColor, Color.black, 0.08f);
+            colors.selectedColor = colors.highlightedColor;
+            colors.disabledColor = new Color(backgroundColor.r, backgroundColor.g, backgroundColor.b, 0.55f);
+            button.colors = colors;
+
+            Outline outline = buttonObject.AddComponent<Outline>();
+            outline.effectColor = HudAccentColor;
+            outline.effectDistance = new Vector2(4f, -4f);
+
+            CreateText(
+                "Label",
+                buttonObject.transform,
+                label,
+                fontSize,
+                TextAnchor.MiddleCenter,
+                new Vector2(0.5f, 0.5f),
+                new Vector2(0.5f, 0.5f),
+                Vector2.zero,
+                size - new Vector2(40f, 18f),
+                textColor);
+
+            return button;
+        }
+
+        private GameObject CreateText(
+            string objectName,
+            Transform parent,
+            string textValue,
+            int fontSize,
+            TextAnchor alignment,
+            Vector2 anchorMin,
+            Vector2 anchorMax,
+            Vector2 anchoredPosition,
+            Vector2 size,
+            Color color)
+        {
+            GameObject textObject = CreateUiObject(objectName, parent);
+            RectTransform rectTransform = textObject.GetComponent<RectTransform>();
+            rectTransform.anchorMin = anchorMin;
+            rectTransform.anchorMax = anchorMax;
+            rectTransform.anchoredPosition = anchoredPosition;
+            rectTransform.sizeDelta = size;
+
+            Text text = textObject.AddComponent<Text>();
+            text.text = textValue;
+            text.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+            text.fontSize = fontSize;
+            text.alignment = alignment;
+            text.color = color;
+            text.horizontalOverflow = HorizontalWrapMode.Wrap;
+            text.verticalOverflow = VerticalWrapMode.Overflow;
+
+            return textObject;
+        }
+
+        private GameObject CreateUiObject(string objectName, Transform parent)
+        {
+            GameObject uiObject = new GameObject(objectName, typeof(RectTransform));
+            uiObject.transform.SetParent(parent, false);
+            return uiObject;
+        }
+
+        private void EnsureEventSystem()
+        {
+            if (EventSystem.current != null)
+            {
+                return;
+            }
+
+            GameObject eventSystemObject = new GameObject("EventSystem");
+            eventSystemObject.transform.SetParent(transform, false);
+            eventSystemObject.AddComponent<EventSystem>();
+            eventSystemObject.AddComponent<StandaloneInputModule>();
+        }
+
+        private void OpenMiniGameWindow()
+        {
+            isMiniGameWindowOpen = true;
+            miniGameWindow.SetActive(true);
+
+            if (isDraggingPiece && draggedPieceIndex >= 0)
+            {
+                pieceViews[draggedPieceIndex].SetDragging(false);
+                pieceViews[draggedPieceIndex].transform.localPosition = pieceSlotPositions[draggedPieceIndex];
+                boardView.HidePlacementPreview();
+                isDraggingPiece = false;
+                draggedPieceIndex = -1;
+            }
+        }
+
+        private void CloseMiniGameWindow()
+        {
+            isMiniGameWindowOpen = false;
+            miniGameWindow.SetActive(false);
+        }
+
+        private bool IsPointerOverUi()
+        {
+            return EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
         }
 
         private void FillVisiblePieces()

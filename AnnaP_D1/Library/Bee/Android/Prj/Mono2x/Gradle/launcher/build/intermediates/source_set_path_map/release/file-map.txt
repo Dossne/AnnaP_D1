@@ -1,0 +1,9 @@
+com.DefaultCompany.AnnaP_D1.launcher-pngs-0 /Users/anna/AnnaP_D1/AnnaP_D1/Library/Bee/Android/Prj/Mono2x/Gradle/launcher/build/generated/res/pngs/release
+com.DefaultCompany.AnnaP_D1.launcher-resValues-1 /Users/anna/AnnaP_D1/AnnaP_D1/Library/Bee/Android/Prj/Mono2x/Gradle/launcher/build/generated/res/resValues/release
+com.DefaultCompany.AnnaP_D1.launcher-rs-2 /Users/anna/AnnaP_D1/AnnaP_D1/Library/Bee/Android/Prj/Mono2x/Gradle/launcher/build/generated/res/rs/release
+com.DefaultCompany.AnnaP_D1.launcher-mergeReleaseResources-3 /Users/anna/AnnaP_D1/AnnaP_D1/Library/Bee/Android/Prj/Mono2x/Gradle/launcher/build/intermediates/incremental/release/mergeReleaseResources/merged.dir
+com.DefaultCompany.AnnaP_D1.launcher-mergeReleaseResources-4 /Users/anna/AnnaP_D1/AnnaP_D1/Library/Bee/Android/Prj/Mono2x/Gradle/launcher/build/intermediates/incremental/release/mergeReleaseResources/stripped.dir
+com.DefaultCompany.AnnaP_D1.launcher-merged_res-5 /Users/anna/AnnaP_D1/AnnaP_D1/Library/Bee/Android/Prj/Mono2x/Gradle/launcher/build/intermediates/merged_res/release
+com.DefaultCompany.AnnaP_D1.launcher-main-6 /Users/anna/AnnaP_D1/AnnaP_D1/Library/Bee/Android/Prj/Mono2x/Gradle/launcher/src/main/res
+com.DefaultCompany.AnnaP_D1.launcher-release-7 /Users/anna/AnnaP_D1/AnnaP_D1/Library/Bee/Android/Prj/Mono2x/Gradle/launcher/src/release/res
+com.DefaultCompany.AnnaP_D1.launcher-packaged_res-8 /Users/anna/AnnaP_D1/AnnaP_D1/Library/Bee/Android/Prj/Mono2x/Gradle/unityLibrary/build/intermediates/packaged_res/release
