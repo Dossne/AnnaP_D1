@@ -14,6 +14,7 @@ namespace FarmMerger.MiniGame
 
         private static Sprite fallbackSprite;
         private static Sprite blackCatSprite;
+        private static Texture2D blackCatTexture;
 
         private RectTransform rootRect;
         private RectTransform spriteRect;
@@ -110,6 +111,21 @@ namespace FarmMerger.MiniGame
 
                     if (blackCatSprite != null)
                     {
+                        return blackCatSprite;
+                    }
+
+                    if (blackCatTexture == null)
+                    {
+                        blackCatTexture = Resources.Load<Texture2D>(BlackCatResourcePath);
+                    }
+
+                    if (blackCatTexture != null)
+                    {
+                        blackCatSprite = Sprite.Create(
+                            blackCatTexture,
+                            new Rect(0f, 0f, blackCatTexture.width, blackCatTexture.height),
+                            new Vector2(0.5f, 0.5f),
+                            100f);
                         return blackCatSprite;
                     }
 
